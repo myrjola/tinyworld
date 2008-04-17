@@ -6,23 +6,24 @@
 #I'm trying to learn pygame and python
 #let's hope it's going to be playable
 ########################################
-def Debug(msg):
-	print msg
 
 import math, os, sys, pygame
 from pygame.locals import *
 
-pygame.init()
-
-sys.path.insert(0, os.path.join("lib")) 
 #makes importing of modules in lib directory possible
+sys.path.insert(0, os.path.join("lib")) 
+from MVC import *
+from objects import *
+from gamefunc import *
 
 
-def main():
+if __name__ == '__main__':
+	#Hopefully starts the game
+	pygame.init()
 	evManager = EventManager()
-	keybd = KeyboardController()
-	spinner = CPUSpinnerController()
-	pygameView = PygameView()
+	keybd = KeyboardController( evManager)
+	spinner = CPUSpinnerController(evManager)
+	pygameView = PygameView(evManager)
 	
 	evManager.RegisterListener( keybd)
 	evManager.RegisterListener( spinner)
@@ -30,5 +31,3 @@ def main():
 
 	spinner.Run()
 
-if __name__ == '__main__':
-	main()
