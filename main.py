@@ -13,7 +13,7 @@ from pygame.locals import *
 #makes importing of modules in lib directory possible
 sys.path.insert(0, os.path.join("lib")) 
 from MVC import *
-from objects import *
+#from objects import *
 from gamefunc import *
 
 
@@ -25,8 +25,8 @@ if __name__ == '__main__':
 	spinner = CPUSpinnerController(evManager)
 	pygameView = PygameView(evManager)
 	
-	evManager.RegisterListener( keybd)
-	evManager.RegisterListener( spinner)
+	evManager.RegisterListener(keybd)
+	evManager.RegisterListener(spinner)
 	evManager.RegisterListener(pygameView)
 
 	spinner.Run()

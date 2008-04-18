@@ -20,35 +20,41 @@ from main import *
 class mainChar(pygame.sprite.Sprite):
 	"""The main character of the game
 	"""
-	def __init__(self):
+	image = None
+
+	def __init__(self, evManager, startLocation):
 		pygame.sprite.Sprite.__init__(self)
 		self.evManager = evManager
-		self.evManager.RegisterListener( self )
+		self.evManager.RegisterListener(self)
 		if mainChar.image == None:
-			mainChar.image, mainChar.rect = load_png('ball.png')
+			mainChar.image, mainChar.rect = load_png('char1.png')
 
 		self.image = mainChar.image
+		self.rect = self.image.get_rect()
 		screen = pygame.display.get_surface()
+		self.rect.topleft = startLocation
 
-
+	def Update(self):
+		self.rect = newpos
 	
 	def Move(self, direction):
+		self.newpos =  self.rect
 		if direction == "jump":
 			#TODO: make character jump
 			return
 		elif direction == "left":
 			#TODO
-			return
+			newpos.move(5,0)
 		elif direction == "right":
 			#TODO
-			return
+			newpos.move(-5,0)
 		elif direction == "duck":
 			#TODO: make character duck, could be tricky as hell
 			return
 
 	def Notify(self, event):
-		if isinstance( event, CharactorMoveRequest ):
-			self.Move( event.direction )
+		if isinstance(event, CharMoveRequest):
+			self.Move(event.direction)
 
 
 
@@ -57,9 +63,9 @@ class bounceBall(pygame.sprite.Sprite):
 	"""
 	image = None
 	
-	def __init__(self, evManager, vector, initial_position):
+	def __init__(self, vector, startLocation):
 		pygame.sprite.Sprite.__init__(self)
-		self.evManager = evManager
+		#self.evManager = evManager
 		#self.evManager.RegisterListener( self )
 
 		if bounceBall.image is None:
@@ -70,7 +76,7 @@ class bounceBall(pygame.sprite.Sprite):
 		screen = pygame.display.get_surface()
 		self.area = screen.get_rect()
 		self.vector = vector
-		self.rect.topleft = initial_position
+		self.rect.topleft = startLocation
 	def update(self):
 		newpos = self.calcnewpos(self.rect,self.vector)
 		self.rect = newpos
@@ -99,5 +105,43 @@ class bounceBall(pygame.sprite.Sprite):
 #class Background(pygame.Surface):
 #	def __init__(self):
 		
+
+class mainChar1(pygame.sprite.Sprite):
+	"""The main character of the game
+	This is a test with another type of control without
+	incorporating MVC and a mediator
+	"""
+	image = None
+
+	def __init__(self, startLocation):
+		pygame.sprite.Sprite.__init__(self)
+		if mainChar.image == None:
+			mainChar.image, mainChar.rect = load_png('char1.png')
+
+		self.image = mainChar.image
+		self.rect = self.image.get_rect()
+		screen = pygame.display.get_surface()
+		self.rect.topleft = startLocation
+		self.movepos = (0,0)
+
+	def update(self):
+		self.rect.move(self.movepos) 
+
+	def Move(self, direction):
+		if direction == "jump":
+			self.movepos = (0,-5)
+			#TODO: make character jump
+		elif direction == "left":
+			self.movepos = (5,0)
+			#TODO
+		elif direction == "right":
+			self.movepos = (-5,0)
+			#TODO
+		elif direction == "duck":
+			#TODO: make character duck, could be tricky as hell
+			self.movepos = (0,5)
+		else: self.movepos = (0,0)
+
+
 
 
