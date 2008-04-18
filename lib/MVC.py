@@ -10,6 +10,7 @@ from pygame.locals import *
 #makes importing of modules in lib directory possible
 sys.path.insert(0, os.path.join("lib")) 
 from gamefunc import *
+from objects import *
 
 
 
@@ -29,6 +30,7 @@ class GameStartedEvent(Event):
 	def __init__(self, game):
 		self.name = "Game Started Event"
 		self.game = game
+global CharMoveRequest
 class CharMoveRequest(Event):
 	def __init__(self, direction):
 		self.name = "Charactor Move Request"
@@ -117,8 +119,9 @@ class PygameView:
 		evManager.RegisterListener( self )
 		self.screen = pygame.display.set_mode([800,400])
 		self.spritegroup = pygame.sprite.RenderUpdates()
-		self.spritegroup.add(mainChar(evManager, [400,200]))
-		#self.spritegroup.add(bounceBall(evManager, (1,5), [400,200]))
+		player = mainChar(evManager, [400,200])
+		ball = bounceBall(evManager, (1,5), [400,200])
+		self.spritegroup.add(player, ball)
 		self.background = pygame.Surface([800, 400])
 		self.background.fill([255,255,255])
 		self.screen.blit(self.background, [0,0])
@@ -135,46 +138,46 @@ class PygameView:
 
 			
 
-class mainChar(pygame.sprite.Sprite):
-	"""The main character of the game
-	"""
-	image = None
-
-	def __init__(self, evManager, startLocation):
-		pygame.sprite.Sprite.__init__(self)
-		self.evManager = evManager
-		self.evManager.RegisterListener(self)
-		if mainChar.image == None:
-			mainChar.image, mainChar.rect = load_png('char1.png')
-
-		self.image = mainChar.image
-		self.rect = self.image.get_rect()
-		screen = pygame.display.get_surface()
-		self.rect.topleft = startLocation
-
-	def Update(self):
-		self.rect = self.newpos
-	
-	def Move(self, direction):
-		self.newpos =  self.rect
-		if direction == "jump":
-			#TODO: make character jump
-			self.newpos.move(0,-5)
-			return
-		elif direction == "left":
-			#TODO
-			self.newpos.move(5,0)
-		elif direction == "right":
-			#TODO
-			self.newpos.move(-5,0)
-		elif direction == "duck":
-			#TODO: make character duck, could be tricky as hell
-			self.newpos.move(0,5)
-		self.rect = self.newpos
-
-	def Notify(self, event):
-		if isinstance(event, CharMoveRequest):
-			self.Move(event.direction)
-
-
-
+#class mainChar(pygame.sprite.Sprite):
+#	"""The main character of the game
+#	"""
+#	image = None
+#
+#	def __init__(self, evManager, startLocation):
+#		pygame.sprite.Sprite.__init__(self)
+#		self.evManager = evManager
+#		self.evManager.RegisterListener(self)
+#		if mainChar.image == None:
+#			mainChar.image, mainChar.rect = load_png('char1.png')
+#
+#		self.image = mainChar.image
+#		self.rect = self.image.get_rect()
+#		screen = pygame.display.get_surface()
+#		self.rect.topleft = startLocation
+#
+#	def Update(self):
+##		self.rect = self.newpos
+#	
+#	def Move(self, direction):
+#		self.newpos =  self.rect
+#		if direction == "jump":
+#			#TODO: make character jump
+#			self.newpos.move(0,-5)
+#			return
+#		elif direction == "left":
+#			#TODO
+#			self.newpos.move(5,0)
+#		elif direction == "right":
+#			#TODO
+#			self.newpos.move(-5,0)
+#		elif direction == "duck":
+#			#TODO: make character duck, could be tricky as hell
+#			self.newpos.move(0,5)
+#		self.rect = self.newpos
+#
+#	def Notify(self, event):
+#		if isinstance(event, CharMoveRequest):
+##			self.Move(event.direction)
+#
+#
+###3

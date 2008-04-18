@@ -63,9 +63,9 @@ class bounceBall(pygame.sprite.Sprite):
 	"""
 	image = None
 	
-	def __init__(self, vector, startLocation):
+	def __init__(self, evManager, vector, startLocation):
 		pygame.sprite.Sprite.__init__(self)
-		#self.evManager = evManager
+		self.evManager = evManager
 		#self.evManager.RegisterListener( self )
 
 		if bounceBall.image is None:
