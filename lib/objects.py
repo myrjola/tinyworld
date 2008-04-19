@@ -10,7 +10,7 @@ from pygame.locals import *
 #makes importing of modules in lib directory possible
 sys.path.insert(0, os.path.join("lib")) 
 from gamefunc import *
-
+from main import *
 
 class Event:
 	"""event superclass"""
@@ -156,28 +156,15 @@ class mainChar(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		screen = pygame.display.get_surface()
 		self.rect.topleft = startLocation
+        self.move = "nomovement"
+        #self.area = screen.get_rect()
 
 	def Update(self):
 		self.rect = newpos
 	
-	def Move(self, direction):
-		self.newpos =  self.rect
-		if direction == "jump":
-			#TODO: make character jump
-			return
-		elif direction == "left":
-			#TODO
-			newpos.move(5,0)
-		elif direction == "right":
-			#TODO
-			newpos.move(-5,0)
-		elif direction == "duck":
-			#TODO: make character duck, could be tricky as hell
-			return
-
 	def Notify(self, event):
 		if isinstance(event, CharMoveRequest):
-			self.Move(event.direction)
+			self.move = event.direction
 
 
 
