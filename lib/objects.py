@@ -76,7 +76,6 @@ class KeyboardController:
                 ev = None
                 if event.type == QUIT:
                     ev = QuitEvent()
-
                 elif event.type == KEYDOWN:
                     if event.key == K_ESCAPE:
                         ev = QuitEvent()
@@ -88,9 +87,12 @@ class KeyboardController:
                         ev = CharMoveRequest('left')
                     elif event.key == K_RIGHT:
                         ev = CharMoveRequest('right')
+                    pygame.event.pump()
                 elif event.type == KEYUP:
                     if event.key == K_DOWN or K_LEFT:
+                        if not isinstance(pygame.key.get_pressed())
                         ev = CharMoveRequest('stopverticalmovement')
+                        
                 if ev:
     				self.evManager.Notify(ev)
     
@@ -124,7 +126,11 @@ class PygameView:
     	player = mainChar(evManager, [400,200])
     	ball = bounceBall(evManager, (1,5), [400,200])
         badguy = badGuy(evManager, [0,0])
-    	self.spritegroup.add(player, ball, badguy)
+        platform = solidObject([390,600])
+        global platformlist
+        platformlist = []
+        platformlist.append(platform.rect)
+    	self.spritegroup.add(player, ball, badguy, platform)
     	self.background = pygame.Surface([1024, 768])
     	self.background.fill([255,255,255])
     	self.screen.blit(self.background, [0,0])
@@ -165,13 +171,15 @@ class mainChar(pygame.sprite.Sprite):
         self.area = screen.get_rect()
         self.speed = 9
         self.movepos = [0,0]
+        self.jumpable = 1
 
     def update(self):
         newpos = self.rect.move(self.movepos)
         self.rect   = newpos
         
         self.movepos[1] += 1 #gravity
-        if not self.rect.colliderect(self.area):
+        if not self.rect.collidelist(platformlist):
+            self.jumpable = 1
             self.movepos[1] = 0
 
 
@@ -184,8 +192,12 @@ class mainChar(pygame.sprite.Sprite):
             elif self.move == "right":
                 self.movepos[0] = self.speed
             elif self.move == "jump":
-                self.movepos[1] = -2*self.speed
+                if self.jumpable >= 1:
+                    self.jumpable = 0
+                    self.movepos[1] = -2*self.speed
+                    
             elif self.move == "stopverticalmovement":
+                print "stop"
                 self.movepos[0] = 0
 
 
@@ -255,4 +267,17 @@ class badGuy(pygame.sprite.Sprite):
 
 class solidObject(pygame.sprite.Sprite):
     image = None
+    def __init__(self, startLocation):
+        pygame.sprite.Sprite.__init__(self)
+        if solidObject.image is None:
+            solidObject.image, solidObject.rect = load_png('solid.png')
+
+        self.image = solidObject.image
+        self.rect = self.image.get_rect()
+        screen = pygame.display.get_surface()
+        self.area = screen.get_rect()
+        self.rect.topleft = startLocation
+    
+
+    
 

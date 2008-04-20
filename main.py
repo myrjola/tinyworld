@@ -16,8 +16,8 @@ from objects import *
 from gamefunc import *
 
 
-if __name__ == '__main__':
-	#Hopefully starts the game
+def main():
+    #Hopefully starts the game
 	pygame.init()
 	evManager = EventManager()
 	keybd = KeyboardController( evManager)
@@ -30,3 +30,5 @@ if __name__ == '__main__':
 
 	spinner.Run()
 
+if __name__ == '__main__':
+    main()
