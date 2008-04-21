@@ -90,8 +90,8 @@ class KeyboardController:
                     pygame.event.pump()
                 elif event.type == KEYUP:
                     if event.key == K_DOWN or K_LEFT:
-                        if not isinstance(pygame.key.get_pressed())
-                        ev = CharMoveRequest('stopverticalmovement')
+                        if not 1 in pygame.key.get_pressed():
+                             ev = CharMoveRequest('stopverticalmovement')
                         
                 if ev:
     				self.evManager.Notify(ev)
@@ -124,13 +124,13 @@ class PygameView:
     	self.screen = pygame.display.set_mode([1024,768])
     	self.spritegroup = pygame.sprite.RenderUpdates()
     	player = mainChar(evManager, [400,200])
-    	ball = bounceBall(evManager, (1,5), [400,200])
+    	self.ball = bounceBall(evManager, (1,5), [400,200])
         badguy = badGuy(evManager, [0,0])
         platform = solidObject([390,600])
         global platformlist
         platformlist = []
         platformlist.append(platform.rect)
-    	self.spritegroup.add(player, ball, badguy, platform)
+    	self.spritegroup.add(player, self.ball, badguy, platform)
     	self.background = pygame.Surface([1024, 768])
     	self.background.fill([255,255,255])
     	self.screen.blit(self.background, [0,0])
@@ -161,7 +161,7 @@ class mainChar(pygame.sprite.Sprite):
     	self.evManager = evManager
     	self.evManager.RegisterListener(self)
     	if mainChar.image == None:
-    		mainChar.image, mainChar.rect = load_png('char1.png')
+    		mainChar.image, mainChar.rect = load_png('char2.png')
             
 
     	self.image = mainChar.image
@@ -172,15 +172,21 @@ class mainChar(pygame.sprite.Sprite):
         self.speed = 9
         self.movepos = [0,0]
         self.jumpable = 1
+        self.jumpabletimes = 2
+        self.direction = "right"
 
     def update(self):
         newpos = self.rect.move(self.movepos)
-        self.rect   = newpos
+        if isinstance(newpos, mainChar):
+            self.__del__()
         
         self.movepos[1] += 1 #gravity
-        if not self.rect.collidelist(platformlist):
-            self.jumpable = 1
+        if not newpos.collidelist(platformlist):
+            self.jumpable = self.jumpabletimes
             self.movepos[1] = 0
+            newpos = self.rect.move([self.movepos[0],0])
+            
+        self.rect = newpos
 
 
 
@@ -188,17 +194,22 @@ class mainChar(pygame.sprite.Sprite):
         if isinstance(event, CharMoveRequest):
             self.move = event.direction
             if self.move == "left":
+                self.direction = "left"
                 self.movepos[0] = -self.speed
             elif self.move == "right":
+                self.direction = "right"
                 self.movepos[0] = self.speed
             elif self.move == "jump":
                 if self.jumpable >= 1:
-                    self.jumpable = 0
+                    self.jumpable -= 1
                     self.movepos[1] = -2*self.speed
                     
             elif self.move == "stopverticalmovement":
-                print "stop"
                 self.movepos[0] = 0
+    
+    def __del__(self):
+        evManager.Notify(CharacterDeadEvent())
+
 
 
 
