@@ -89,9 +89,9 @@ class KeyboardController:
                         ev = CharMoveRequest('right')
                     pygame.event.pump()
                 elif event.type == KEYUP:
-                    if event.key == K_DOWN or K_LEFT:
-                        if not 1 in pygame.key.get_pressed():
-                             ev = CharMoveRequest('stopverticalmovement')
+                    keys = pygame.key.get_pressed()
+                    if not 1 in [keys[K_LEFT], keys[K_RIGHT]]:
+                        ev = CharMoveRequest('stopverticalmovement')
                         
                 if ev:
     				self.evManager.Notify(ev)
@@ -126,11 +126,11 @@ class PygameView:
     	player = mainChar(evManager, [400,200])
     	self.ball = bounceBall(evManager, (1,5), [400,200])
         badguy = badGuy(evManager, [0,0])
-        platform = solidObject([390,600])
+        platform = solidObject([390,500])
+        platform1 = solidObject([390,300])
         global platformlist
-        platformlist = []
-        platformlist.append(platform.rect)
-    	self.spritegroup.add(player, self.ball, badguy, platform)
+        platformlist = [platform.rect, platform1.rect]
+    	self.spritegroup.add(player, self.ball, badguy, platform, platform1)
     	self.background = pygame.Surface([1024, 768])
     	self.background.fill([255,255,255])
     	self.screen.blit(self.background, [0,0])
@@ -173,20 +173,25 @@ class mainChar(pygame.sprite.Sprite):
         self.movepos = [0,0]
         self.jumpable = 1
         self.jumpabletimes = 2
-        self.direction = "right"
+        self.direction = "none"
 
     def update(self):
         newpos = self.rect.move(self.movepos)
-        if isinstance(newpos, mainChar):
-            self.__del__()
-        
         self.movepos[1] += 1 #gravity
-        if not newpos.collidelist(platformlist):
-            self.jumpable = self.jumpabletimes
-            self.movepos[1] = 0
+        if self.movepos[1] >= 0 and newpos.collidelist(platformlist) != -1: #nocollide = -1
+            while newpos.collidelist(platformlist) != -1: #make soft landing
+                self.movepos[1] -=1
+                newpos = self.rect.move([0,self.movepos[1]])
             newpos = self.rect.move([self.movepos[0],0])
+            self.jumpable = self.jumpabletimes
+        if self.movepos[1] <= 0 and newpos.collidelist(platformlist) != -1: #nocollide = -1
+            while newpos.collidelist(platformlist) != -1: #make soft headbump
+                self.movepos[1] +=1
+                newpos = self.rect.move([-self.movepos[0],self.movepos[1]])
+            newpos = self.rect.move([self.movepos[0],0])
+ 
             
-        self.rect = newpos
+        self.rect = newpos #move the character
 
 
 
@@ -205,6 +210,7 @@ class mainChar(pygame.sprite.Sprite):
                     self.movepos[1] = -2*self.speed
                     
             elif self.move == "stopverticalmovement":
+                self.direction = "none"
                 self.movepos[0] = 0
     
     def __del__(self):
