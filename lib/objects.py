@@ -130,11 +130,11 @@ class PygameView:
     	self.spritegroup = pygame.sprite.RenderUpdates()
     	player = mainChar(evManager, [400,200])
     	self.ball = bounceBall(evManager, (1,5), [400,200])
-        badguy = badGuy(evManager, [0,0])
-        platform = solidPlatform([390,500])
+        platform = solidPlatform([390,600])
         platform1 = solidPlatform([390,300])
+        platform2 = solidPlatform([390,390])
         wall = solidWall([390,300])
-    	self.spritegroup.add(player, self.ball, badguy, platform, platform1, wall)
+    	self.spritegroup.add(player, self.ball, platform, platform1, platform2, wall)
     	self.background = pygame.Surface([1024, 768])
     	self.background.fill([255,255,255])
     	self.screen.blit(self.background, [0,0])
@@ -166,7 +166,6 @@ class mainChar(pygame.sprite.Sprite):
     	self.evManager.RegisterListener(self)
     	if mainChar.image == None:
     		mainChar.image, mainChar.rect = load_png('char2.png')
-            
 
     	self.image = mainChar.image
     	screen = pygame.display.get_surface()
@@ -180,8 +179,10 @@ class mainChar(pygame.sprite.Sprite):
         self.direction = "none"
 
     def update(self):
+
         newpos = self.rect.move(self.movepos)
-        self.movepos[1] += 1 #gravity
+        if self.movepos[1] <= 12:
+            self.movepos[1] += 1 #gravity
 
         if newpos.collidelist(walls) != -1:
             newpos = self.rect.move([0,self.movepos[1]])
@@ -197,6 +198,7 @@ class mainChar(pygame.sprite.Sprite):
                 self.movepos[1] +=1
                 newpos = self.rect.move([-self.movepos[0],self.movepos[1]])
             newpos = self.rect.move([self.movepos[0],0])
+        
  
             
         self.rect = newpos #move the character
@@ -319,7 +321,10 @@ class solidWall(pygame.sprite.Sprite):
         self.area = screen.get_rect()
         self.rect.topleft = startLocation
         walls.append(self.rect)
-        platformlist.append(Rect((self.rect.bottomleft,[self.rect.width, 1])).inflate(-2,0))
+        platformlist.append(Rect((self.rect.bottomleft,[self.rect.width, 1])).inflate(-5,0))
+        platformlist.append(Rect((self.rect.topleft,[self.rect.width, 1])).inflate(-5,0))
+        
+
         
 class platformWall:
     def __init__(self,startLocation):
