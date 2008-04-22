@@ -12,6 +12,11 @@ sys.path.insert(0, os.path.join("lib"))
 from gamefunc import *
 from main import *
 
+global walls
+walls = []
+
+global platformlist
+platformlist = []
 class Event:
     """event superclass"""
     def __init__(self):
@@ -126,11 +131,10 @@ class PygameView:
     	player = mainChar(evManager, [400,200])
     	self.ball = bounceBall(evManager, (1,5), [400,200])
         badguy = badGuy(evManager, [0,0])
-        platform = solidObject([390,500])
-        platform1 = solidObject([390,300])
-        global platformlist
-        platformlist = [platform.rect, platform1.rect]
-    	self.spritegroup.add(player, self.ball, badguy, platform, platform1)
+        platform = solidPlatform([390,500])
+        platform1 = solidPlatform([390,300])
+        wall = solidWall([390,300])
+    	self.spritegroup.add(player, self.ball, badguy, platform, platform1, wall)
     	self.background = pygame.Surface([1024, 768])
     	self.background.fill([255,255,255])
     	self.screen.blit(self.background, [0,0])
@@ -178,6 +182,10 @@ class mainChar(pygame.sprite.Sprite):
     def update(self):
         newpos = self.rect.move(self.movepos)
         self.movepos[1] += 1 #gravity
+
+        if newpos.collidelist(walls) != -1:
+            newpos = self.rect.move([0,self.movepos[1]])
+
         if self.movepos[1] >= 0 and newpos.collidelist(platformlist) != -1: #nocollide = -1
             while newpos.collidelist(platformlist) != -1: #make soft landing
                 self.movepos[1] -=1
@@ -282,19 +290,41 @@ class badGuy(pygame.sprite.Sprite):
         newpos = self.rect.move(1,1)
         self.rect = newpos
 
-class solidObject(pygame.sprite.Sprite):
+class solidPlatform(pygame.sprite.Sprite):
     image = None
     def __init__(self, startLocation):
         pygame.sprite.Sprite.__init__(self)
-        if solidObject.image is None:
-            solidObject.image, solidObject.rect = load_png('solid.png')
+        if solidPlatform.image is None:
+            solidPlatform.image, solidPlatform.rect = load_png('solid.png')
 
-        self.image = solidObject.image
+        self.image = solidPlatform.image
+        self.rect = self.image.get_rect()
+        screen = pygame.display.get_surface()
+        self.rect.topleft = startLocation
+        wall1 = platformWall(startLocation)
+        wall2 = platformWall(self.rect.topright)
+        platformlist.append(self.rect)
+    
+
+class solidWall(pygame.sprite.Sprite):
+    image = None
+    def __init__(self, startLocation):
+        pygame.sprite.Sprite.__init__(self)
+        if solidWall.image is None:
+            solidWall.image, solidWall.rect = load_png('wall.png')
+        
+        self.image = solidWall.image
         self.rect = self.image.get_rect()
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
         self.rect.topleft = startLocation
-    
+        walls.append(self.rect)
+        platformlist.append(Rect((self.rect.bottomleft,[self.rect.width, 1])).inflate(-2,0))
+        
+class platformWall:
+    def __init__(self,startLocation):
+        self.rect = Rect(startLocation,[1,17])
+        walls.append(self.rect)
+        screen = pygame.display.get_surface()
 
-    
-
+            
