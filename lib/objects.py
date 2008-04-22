@@ -4,11 +4,12 @@ Somehow it was impossible to split MVC events and in-game
 characters in different files.
 '''
 
-import math, os, sys, pygame
+import math, os, sys, pygame, pickle
 from pygame.locals import *
 
 #makes importing of modules in lib directory possible
 sys.path.insert(0, os.path.join("lib")) 
+import levels
 from gamefunc import *
 from main import *
 
@@ -33,11 +34,13 @@ class GameStartedEvent(Event):
     def __init__(self, game):
     	self.name = "Game Started Event"
     	self.game = game
-global CharMoveRequest
 class CharMoveRequest(Event):
     def __init__(self, direction):
     	self.name = "Charactor Move Request"
     	self.direction = direction
+class DisplayReady(Event):
+    def __init__(self):
+        self.name = "Display Ready Event"
 
 class EventManager:
     """The mediator betveen MVC"""
@@ -127,28 +130,74 @@ class PygameView:
     	self.evManager = evManager
     	evManager.RegisterListener(self)
     	self.screen = pygame.display.set_mode([1024,768])
-    	self.spritegroup = pygame.sprite.RenderUpdates()
-    	player = mainChar(evManager, [400,200])
-    	self.ball = bounceBall(evManager, (1,5), [400,200])
-        platform = solidPlatform([390,600])
-        platform1 = solidPlatform([390,300])
-        platform2 = solidPlatform([390,390])
-        wall = solidWall([390,300])
-    	self.spritegroup.add(player, self.ball, platform, platform1, platform2, wall)
+        global spritegroup
+    	spritegroup = pygame.sprite.RenderUpdates()
     	self.background = pygame.Surface([1024, 768])
     	self.background.fill([255,255,255])
     	self.screen.blit(self.background, [0,0])
     	pygame.display.flip()
+        evManager.Notify(DisplayReady())
     		
     	
     def Notify(self, event):
     	if isinstance( event, TickEvent ):
     		#TODO; draw everything
-    		self.spritegroup.update()
-    		rectlist = self.spritegroup.draw(self.screen)
+    		spritegroup.update()
+    		rectlist = spritegroup.draw(self.screen)
     		pygame.display.update(rectlist)
-    		self.spritegroup.clear(self.screen, self.background)
+    		spritegroup.clear(self.screen, self.background)
 
+class LevelController:
+    def __init__(self,evManager):
+        self.evManager = evManager
+        
+    def Notify(self, event):
+        if isinstance(event, DisplayReady):
+            evManager = self.evManager
+            self.CreateLevel(self.OpenLevelFile('level1'))
+            '''
+            player = mainChar(evManager, [400,200])
+            self.ball = bounceBall(evManager, (1,5), [400,200])
+            platform = solidPlatform([390,600])
+            platform1 = solidPlatform([390,300])
+            platform2 = solidPlatform([390,390])
+            wall = solidWall([390,300])
+    	    spritegroup.add(player, self.ball, platform, platform1, platform2, wall)
+            '''
+    def CreateLevel(self,level):
+        evManager = self.evManager
+        charlist = level[0][0]
+        badguylist = level[1]
+        platflist = level[2][0]
+        print platflist
+        walllist = level[3][0]
+        for i in charlist:
+            spritegroup.add(mainChar(evManager, i))
+        for i in badguylist:
+            spritegroup.add(bounceBall(evManager, (1,5), [400,200]))
+        for i in platflist:
+            print i
+            spritegroup.add(solidPlatform(i))
+        for i in walllist:
+            spritegroup.add(solidWall(i))
+
+
+    def OpenLevelFile(self,file):
+        fullname = os.path.join('levels',file)
+        levelfile = open(fullname, 'r')
+        leveldata = pickle.load(levelfile)
+        return leveldata
+        
+        
+
+
+
+    	
+        
+        
+        
+    	
+        
     		
 '''
 ##################### END OF MVC and mediator objects####################
@@ -333,3 +382,19 @@ class platformWall:
         screen = pygame.display.get_surface()
 
             
+'''
+            ############## The Levels ################
+'''
+class Level1:
+    def __init__(self, evManager):
+        self.evManager = evManager
+        player = mainChar(evManager, [400,200])
+        self.ball = bounceBall(evManager, (1,5), [400,200])
+        platform = solidPlatform([390,600])
+        platform1 = solidPlatform([390,300])
+        platform2 = solidPlatform([390,390])
+        wall = solidWall([390,300])
+        spritegroup.add(player, self.ball, platform, platform1, platform2, wall)
+
+
+

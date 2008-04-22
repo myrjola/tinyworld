@@ -18,17 +18,19 @@ from gamefunc import *
 
 def main():
     #Hopefully starts the game
-	pygame.init()
-	evManager = EventManager()
-	keybd = KeyboardController( evManager)
-	spinner = CPUSpinnerController(evManager)
-	pygameView = PygameView(evManager)
-	
-	evManager.RegisterListener(keybd)
-	evManager.RegisterListener(spinner)
-	evManager.RegisterListener(pygameView)
+    pygame.init()
+    evManager = EventManager()
+    keybd = KeyboardController( evManager)
+    spinner = CPUSpinnerController(evManager)
+    levelControl = LevelController(evManager)
+    evManager.RegisterListener(levelControl)
+    pygameView = PygameView(evManager)
 
-	spinner.Run()
+    evManager.RegisterListener(keybd)
+    evManager.RegisterListener(spinner)
+    evManager.RegisterListener(pygameView)
+
+    spinner.Run()
 
 if __name__ == '__main__':
     main()
