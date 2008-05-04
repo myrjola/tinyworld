@@ -9,7 +9,7 @@ from pygame.locals import *
 
 #makes importing of modules in lib directory possible
 sys.path.insert(0, os.path.join("lib")) 
-import levels
+#import levels
 from gamefunc import *
 from main import *
 
@@ -79,11 +79,12 @@ class KeyboardController:
     	self.evManager.RegisterListener(self)
     def Notify(self, event):
     	if isinstance(event, TickEvent):
-    		#TODO: Handle input events
-            for event in pygame.event.get():
+
+    	    for event in pygame.event.get():
                 ev = None
                 if event.type == QUIT:
                     ev = QuitEvent()
+                    
                 elif event.type == KEYDOWN:
                     if event.key == K_ESCAPE:
                         ev = QuitEvent()
@@ -96,10 +97,13 @@ class KeyboardController:
                     elif event.key == K_RIGHT:
                         ev = CharMoveRequest('right')
                     pygame.event.pump()
+                    
+
+                   
                 elif event.type == KEYUP:
                     keys = pygame.key.get_pressed()
                     if not 1 in [keys[K_LEFT], keys[K_RIGHT]]:
-                        ev = CharMoveRequest('stopverticalmovement')
+                        ev = CharMoveRequest('stophorisontalmovement')
                         
                 if ev:
     				self.evManager.Notify(ev)
@@ -225,18 +229,50 @@ class mainChar(pygame.sprite.Sprite):
         self.movepos = [0,0]
         self.jumpable = 1
         self.jumpabletimes = 2
-        self.direction = "none"
+        #self.direction = "none"
+        self.state = "still"
 
     def update(self):
 
+        #Determine movement direction(needed for collisions and sprite)
+        #if self.movepos[0] <= 0:
+        #    self.direction = "left"
+        #else: self.direction = "right"
+
         newpos = self.rect.move(self.movepos)
+
         if self.movepos[1] <= 12:
             self.movepos[1] += 1 #gravity
 
-        if newpos.collidelist(walls) != -1:
-            newpos = self.rect.move([0,self.movepos[1]])
+        #newpos = self.rect.move([0,self.movepos[1]])
+        newpos = self.PlatformCollisionCheck(newpos)
+        newpos = self.WallCollisionCheck(newpos)
 
-        if self.movepos[1] >= 0 and newpos.collidelist(platformlist) != -1: #nocollide = -1
+        self.rect = newpos #move the character
+
+    def WallCollisionCheck(self, newpos):
+        #TODO: Get this fucking thing working :D
+        movepos = self.movepos
+        #collision with vertical walls
+        if newpos.collidelist(walls) != -1:
+            #if self.direction == "left":
+            if movepos[0] <= 0: #going left
+                while newpos.collidelist(walls) != -1:
+                    movepos[0] +=1
+                    newpos = self.rect.move([movepos[0],0])
+                #self.evManager.Notify(CharMoveRequest('left'))
+          
+            elif movepos[0] >= 0: #going right
+                while newpos.collidelist(walls) != -1:
+                    movepos[0] -=1
+                    newpos = self.rect.move([movepos[0],0])
+                #self.evManager.Notify(CharMoveRequest('right'))
+        return newpos
+   
+
+    def PlatformCollisionCheck(self, newpos):
+         #collision with horisontal platforms
+        if self.movepos[1] >= 0 and newpos.collidelist(platformlist) != -1:
             while newpos.collidelist(platformlist) != -1: #make soft landing
                 self.movepos[1] -=1
                 newpos = self.rect.move([0,self.movepos[1]])
@@ -247,29 +283,33 @@ class mainChar(pygame.sprite.Sprite):
                 self.movepos[1] +=1
                 newpos = self.rect.move([-self.movepos[0],self.movepos[1]])
             newpos = self.rect.move([self.movepos[0],0])
-        
- 
-            
-        self.rect = newpos #move the character
-
+        return newpos
 
 
     def Notify(self, event):
         if isinstance(event, CharMoveRequest):
             self.move = event.direction
+            self.state = "moving"
             if self.move == "left":
-                self.direction = "left"
+                #self.direction = "left"
+                collide = False
                 self.movepos[0] = -self.speed
+                
+                
             elif self.move == "right":
-                self.direction = "right"
+                #self.direction = "right"
                 self.movepos[0] = self.speed
+                            
+
+ 
             elif self.move == "jump":
                 if self.jumpable >= 1:
                     self.jumpable -= 1
                     self.movepos[1] = -2*self.speed
                     
-            elif self.move == "stopverticalmovement":
-                self.direction = "none"
+            elif self.move == "stophorisontalmovement":
+                #self.direction = "none"
+                self.state = "still"
                 self.movepos[0] = 0
     
     def __del__(self):
