@@ -229,7 +229,7 @@ class mainChar(pygame.sprite.Sprite):
         self.movepos = [0,0]
         self.jumpable = 1
         self.jumpabletimes = 2
-        #self.direction = "none"
+        self.direction = None
         self.state = "still"
 
     def update(self):
@@ -240,9 +240,14 @@ class mainChar(pygame.sprite.Sprite):
         #else: self.direction = "right"
 
         newpos = self.rect.move(self.movepos)
+        if self.direction == "left":
+            self.MoveLeft(-self.speed)
+        elif self.direction == "right":
+            self.MoveRight(self.speed)
+        else: self.StopMoving()
 
         if self.movepos[1] <= 12:
-            self.movepos[1] += 1 #gravity
+            self.movepos[1] += .5 #gravity
 
         #newpos = self.rect.move([0,self.movepos[1]])
         newpos = self.PlatformCollisionCheck(newpos)
@@ -250,11 +255,26 @@ class mainChar(pygame.sprite.Sprite):
 
         self.rect = newpos #move the character
 
+    def StopMoving(self):
+        self.movepos[0] = 0 
+
+    def MoveLeft(self, speed):
+        newpos = self.rect.move(-1,self.movepos[1])
+        if newpos.collidelist(walls) == -1:
+            self.movepos[0] = speed
+
+    def MoveRight(self, speed):
+        newpos = self.rect.move(1,self.movepos[1])
+        if newpos.collidelist(walls) == -1:
+            self.movepos[0] = speed
+
     def WallCollisionCheck(self, newpos):
-        #TODO: Get this fucking thing working :D
         movepos = self.movepos
         #collision with vertical walls
         if newpos.collidelist(walls) != -1:
+            #newpos = self.rect.move([0,self.movepos[1]])
+            
+            
             #if self.direction == "left":
             if movepos[0] <= 0: #going left
                 while newpos.collidelist(walls) != -1:
@@ -266,7 +286,11 @@ class mainChar(pygame.sprite.Sprite):
                 while newpos.collidelist(walls) != -1:
                     movepos[0] -=1
                     newpos = self.rect.move([movepos[0],0])
+
                 #self.evManager.Notify(CharMoveRequest('right'))
+            
+             
+            
         return newpos
    
 
@@ -291,16 +315,12 @@ class mainChar(pygame.sprite.Sprite):
             self.move = event.direction
             self.state = "moving"
             if self.move == "left":
-                #self.direction = "left"
-                collide = False
+                self.direction = "left"
                 self.movepos[0] = -self.speed
                 
-                
             elif self.move == "right":
-                #self.direction = "right"
+                self.direction = "right"
                 self.movepos[0] = self.speed
-                            
-
  
             elif self.move == "jump":
                 if self.jumpable >= 1:
@@ -308,7 +328,7 @@ class mainChar(pygame.sprite.Sprite):
                     self.movepos[1] = -2*self.speed
                     
             elif self.move == "stophorisontalmovement":
-                #self.direction = "none"
+                self.direction = None
                 self.state = "still"
                 self.movepos[0] = 0
     
