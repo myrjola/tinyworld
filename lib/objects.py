@@ -161,24 +161,20 @@ class LevelController:
     def Notify(self, event):
         if isinstance(event, DisplayReady):
             evManager = self.evManager
-            self.CreateLevel(self.OpenLevelFile('level1'))
+            self.CreateLevel(self.OpenLevelFile('level3'))
 
     def CreateLevel(self,level):
         evManager = self.evManager
-        charlist = level[0][0]
-        badguylist = level[1]
-        platflist = level[2][0]
-        walllist = level[3][0]
-        for i in charlist:
+        for i in level["mainchar"]:
             global mainchar
             mainchar = mainChar(evManager, i)
-            goodGuysSprites.add(mainchar)
-        for i in badguylist:
-            badGuysSprites.add(badGuy(evManager, [0,0]))
-            badGuysSprites.add(bounceBall(evManager, (1,5), [0,0]))
-        for i in platflist:
+        for i in level["badguys"]:
+            badGuysSprites.add(badGuy(evManager, i))
+        for i in level["balls"]:
+            badGuysSprites.add(bounceBall(evManager, (1,5), i))
+        for i in level["platforms"]:
             badGuysSprites.add(solidPlatform(i))
-        for i in walllist:
+        for i in level["walls"]:
             badGuysSprites.add(solidWall(i))
 
 
@@ -303,12 +299,9 @@ class mainChar(pygame.sprite.Sprite, PlatformerPhysics):
         self.direction = None
         self.state = "still"
 
-    def update(self):
+        goodGuysSprites.add(self)
 
-        #Determine movement direction(needed for collisions and sprite)
-        #if self.movepos[0] <= 0:
-        #    self.direction = "left"
-        #else: self.direction = "right"
+    def update(self):
 
         self.newpos = self.rect.move(self.movepos)
         if self.direction == "left":
@@ -341,7 +334,7 @@ class mainChar(pygame.sprite.Sprite, PlatformerPhysics):
                  
     def Collide(self, collideobject):
         if collideobject.deadly == True:
-            self.kill()
+            self.rect.topleft = self.startLocation
         else:
             collideobject.kill()
 
@@ -368,9 +361,6 @@ class mainChar(pygame.sprite.Sprite, PlatformerPhysics):
     
     def __del__(self):
         self.evManager.Notify(CharacterDeadEvent())
-        global mainchar
-        mainchar = mainChar(self.evManager, self.startLocation)
-
 
     
 

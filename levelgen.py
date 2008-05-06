@@ -2,11 +2,19 @@
 import pygame, sys, os, pickle
 from pygame.locals import *
 
+#makes importing of modules in lib directory possible
+sys.path.insert(0, os.path.join("lib")) 
+from gamefunc import *
+
+listorder = ["mainchar","badguys","balls","platforms","walls"]
+spritelist = ["char2.png","badguy1.png","ball1.png","solid.png","wall.png"]
+leveldatadict = {"mainchar":[],"badguys":[],"balls":[],"platforms":[],"walls":[]}
+listorderindex = 0
 charlist = []
 badguylist = []
 platflist = []
 wallist = []
-level = str(raw_input('which level name? '))
+level = str(raw_input('which level name? --> '))
 
 
 pygame.init()
@@ -23,26 +31,36 @@ while running == 1:
             if event.type == QUIT:
                 running = 0
             if event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    mousepos = pygame.mouse.get_pos()
+                    leveldatadict[listorder[listorderindex]].append(mousepos)
+                    img, rect = load_png(spritelist[listorderindex])
+                    screen.blit(img,mousepos)
+                if event.button == 3:
+                    listorderindex += 1
+                    try: print listorder[listorderindex]
+                    except IndexError: listorderindex = 0
+
                 print event.button
+                print pygame.mouse.get_pos()
+    pygame.display.flip()
+print leveldatadict
 
 
 #TODO make mouse driven level editor
 
 
+'''
 charlist.append([400,200])
 badguylist.append([400,200])
 platformlist = [[390,600],[390,300],[390,390]]
 wallist = [[390,300],[700,300]]
+'''
 
-
-
-
-
-leveldatalist = [[charlist],[badguylist],[platformlist],[wallist]]
-print leveldatalist
 
 fullname = os.path.join('levels',level)
 levelfile = open(fullname, 'w')
-pickle.dump(leveldatalist, levelfile)
+pickle.dump(leveldatadict, levelfile)
+print "level generated"
 
 
