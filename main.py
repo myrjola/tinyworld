@@ -25,6 +25,8 @@ def main():
     levelControl = LevelController(evManager)
     evManager.RegisterListener(levelControl)
     pygameView = PygameView(evManager)
+    collisionControl = CollisionController(evManager)
+    evManager.RegisterListener(collisionControl)
 
     evManager.RegisterListener(keybd)
     evManager.RegisterListener(spinner)

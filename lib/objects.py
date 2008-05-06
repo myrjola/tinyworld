@@ -4,7 +4,7 @@ Somehow it was impossible to split MVC events and in-game
 characters in different files.
 '''
 
-import math, os, sys, pygame, pickle
+import math, os, sys, pygame, pickle, random
 from pygame.locals import *
 
 #makes importing of modules in lib directory possible
@@ -21,23 +21,23 @@ platformlist = []
 class Event:
     """event superclass"""
     def __init__(self):
-    	self.name = "Generic Event"
+        self.name = "Generic Event"
 
 class TickEvent(Event):
     def __init__(self):
-    	self.name = "CPU Tick Event"
+        self.name = "CPU Tick Event"
 
 class QuitEvent(Event):
     def __init__(self):
-    	self.name = "Program Quit Event"
+        self.name = "Program Quit Event"
 class GameStartedEvent(Event):
     def __init__(self, game):
-    	self.name = "Game Started Event"
-    	self.game = game
+        self.name = "Game Started Event"
+        self.game = game
 class CharMoveRequest(Event):
     def __init__(self, direction):
-    	self.name = "Charactor Move Request"
-    	self.direction = direction
+        self.name = "Charactor Move Request"
+        self.direction = direction
 class DisplayReady(Event):
     def __init__(self):
         self.name = "Display Ready Event"
@@ -45,42 +45,42 @@ class DisplayReady(Event):
 class EventManager:
     """The mediator betveen MVC"""
     def __init__(self):
-    	from weakref import WeakKeyDictionary
-    	self.listeners = WeakKeyDictionary()
-    	self.eventQueue = []
+        from weakref import WeakKeyDictionary
+        self.listeners = WeakKeyDictionary()
+        self.eventQueue = []
 
     def RegisterListener(self, listener):
-    	self.listeners[ listener ] = 1
+        self.listeners[ listener ] = 1
     
     def UnregisterListener(self, listener):
-    	if listener in self.listeners.keys():
-    		del self.listeners[ listener ]
+        if listener in self.listeners.keys():
+            del self.listeners[ listener ]
     
     def Post(self, event):
-    	for listener in self.listeners.keys():
-    		#NOTE: If the weakref has died it will
-    		#be automatically removed, so we don't
-    		#have to worry about it
-    		listener.Notify(event)
+        for listener in self.listeners.keys():
+            #NOTE: If the weakref has died it will
+            #be automatically removed, so we don't
+            #have to worry about it
+            listener.Notify(event)
     
     def Notify(self, event):
-    	for listener in self.listeners.keys():
-    		#If weakref has died, remove it and continue
-    		#through the list
-    		if listener is None:
-    			del self.listeners[listener]
-    			continue
-    		listener.Notify(event)
+        for listener in self.listeners.keys():
+            #If weakref has died, remove it and continue
+            #through the list
+            if listener is None:
+                del self.listeners[listener]
+                continue
+            listener.Notify(event)
 
 
 class KeyboardController:
     def __init__(self,evManager):
-    	self.evManager = evManager
-    	self.evManager.RegisterListener(self)
+        self.evManager = evManager
+        self.evManager.RegisterListener(self)
     def Notify(self, event):
-    	if isinstance(event, TickEvent):
+        if isinstance(event, TickEvent):
 
-    	    for event in pygame.event.get():
+            for event in pygame.event.get():
                 ev = None
                 if event.type == QUIT:
                     ev = QuitEvent()
@@ -106,50 +106,53 @@ class KeyboardController:
                         ev = CharMoveRequest('stophorisontalmovement')
                         
                 if ev:
-    				self.evManager.Notify(ev)
+                    self.evManager.Notify(ev)
     
     
 
 
 class CPUSpinnerController:
     def __init__(self,evManager):
-    	#implement fps-limit
-    	self.clock = pygame.time.Clock()
-    	self.evManager = evManager
-    	self.keepGoing = 1
+        #implement fps-limit
+        self.clock = pygame.time.Clock()
+        self.evManager = evManager
+        self.keepGoing = 1
 
     def Run(self):
-    	while self.keepGoing:
-    		self.clock.tick(30)
-    		event = TickEvent()
-    		self.evManager.Notify(event)
+        while self.keepGoing:
+            self.clock.tick(30)
+            event = TickEvent()
+            self.evManager.Notify(event)
 
     def Notify(self,event):
-    	if isinstance(event,QuitEvent):
-    		#stop the while loop
-    		self.keepGoing = 0
+        if isinstance(event,QuitEvent):
+            #stop the while loop
+            self.keepGoing = 0
 
 class PygameView:
     def __init__(self,evManager):
-    	self.evManager = evManager
-    	evManager.RegisterListener(self)
-    	self.screen = pygame.display.set_mode([1024,768])
-        global spritegroup
-    	spritegroup = pygame.sprite.RenderUpdates()
-    	self.background = pygame.Surface([1024, 768])
-    	self.background.fill([255,255,255])
-    	self.screen.blit(self.background, [0,0])
-    	pygame.display.flip()
+        self.evManager = evManager
+        evManager.RegisterListener(self)
+        self.screen = pygame.display.set_mode([1024,768])
+        global badGuysSprites
+        badGuysSprites = pygame.sprite.RenderUpdates()
+        global goodGuysSprites
+        goodGuysSprites = pygame.sprite.RenderUpdates()
+        self.background = pygame.Surface([1024, 768])
+        self.background.fill([255,255,255])
+        self.screen.blit(self.background, [0,0])
+        pygame.display.flip()
         evManager.Notify(DisplayReady())
-    		
-    	
+            
+        
     def Notify(self, event):
-    	if isinstance( event, TickEvent ):
-    		#TODO; draw everything
-    		spritegroup.update()
-    		rectlist = spritegroup.draw(self.screen)
-    		pygame.display.update(rectlist)
-    		spritegroup.clear(self.screen, self.background)
+        if isinstance( event, TickEvent ):
+            badGuysSprites.update()
+            goodGuysSprites.update()
+            rectlist = badGuysSprites.draw(self.screen) + goodGuysSprites.draw(self.screen)
+            pygame.display.update(rectlist)
+            badGuysSprites.clear(self.screen, self.background)
+            goodGuysSprites.clear(self.screen, self.background)
 
 class LevelController:
     def __init__(self,evManager):
@@ -159,31 +162,24 @@ class LevelController:
         if isinstance(event, DisplayReady):
             evManager = self.evManager
             self.CreateLevel(self.OpenLevelFile('level1'))
-            '''
-            player = mainChar(evManager, [400,200])
-            self.ball = bounceBall(evManager, (1,5), [400,200])
-            platform = solidPlatform([390,600])
-            platform1 = solidPlatform([390,300])
-            platform2 = solidPlatform([390,390])
-            wall = solidWall([390,300])
-    	    spritegroup.add(player, self.ball, platform, platform1, platform2, wall)
-            '''
+
     def CreateLevel(self,level):
         evManager = self.evManager
         charlist = level[0][0]
         badguylist = level[1]
         platflist = level[2][0]
-        print platflist
         walllist = level[3][0]
         for i in charlist:
-            spritegroup.add(mainChar(evManager, i))
+            global mainchar
+            mainchar = mainChar(evManager, i)
+            goodGuysSprites.add(mainchar)
         for i in badguylist:
-            spritegroup.add(bounceBall(evManager, (1,5), [400,200]))
+            badGuysSprites.add(badGuy(evManager, [0,0]))
+            badGuysSprites.add(bounceBall(evManager, (1,5), [0,0]))
         for i in platflist:
-            print i
-            spritegroup.add(solidPlatform(i))
+            badGuysSprites.add(solidPlatform(i))
         for i in walllist:
-            spritegroup.add(solidWall(i))
+            badGuysSprites.add(solidWall(i))
 
 
     def OpenLevelFile(self,file):
@@ -191,82 +187,54 @@ class LevelController:
         levelfile = open(fullname, 'r')
         leveldata = pickle.load(levelfile)
         return leveldata
+
+class CollisionController:
+    '''
+    A class that handles collisionmanagement
+    '''
+
+    def __init__(self, evManager):
+        self.evManager = evManager
+
+    def Notify(self, event):
+        if isinstance( event, TickEvent ):
+            collisions = pygame.sprite.groupcollide(goodGuysSprites, 
+                    badGuysSprites, False, False) #returns dictionary
+            for smashed in collisions: #"smashed"key returns collisionlist
+                for colobj in collisions[smashed]:
+                    print smashed, "collided with", colobj
+                    colobj.Collide(smashed) #badguy collision event 
+                    smashed.Collide(colobj) #goodguy collision event
+        
         
         
 
 
 
-    	
         
         
         
-    	
         
-    		
+        
+        
+            
 '''
 ##################### END OF MVC and mediator objects####################
 '''
-
-
-class mainChar(pygame.sprite.Sprite):
-    """The main character of the game
-    """
-    image = None
-
-    def __init__(self, evManager, startLocation):
-    	pygame.sprite.Sprite.__init__(self)
-    	self.evManager = evManager
-    	self.evManager.RegisterListener(self)
-    	if mainChar.image == None:
-    		mainChar.image, mainChar.rect = load_png('char2.png')
-
-    	self.image = mainChar.image
-    	screen = pygame.display.get_surface()
-    	self.rect = self.image.get_rect()
-    	self.rect.topleft = startLocation
-        self.area = screen.get_rect()
-        self.speed = 9
-        self.movepos = [0,0]
-        self.jumpable = 1
-        self.jumpabletimes = 2
-        self.direction = None
-        self.state = "still"
+class PlatformerPhysics:
+    '''Main object for objects that need physics
+       like gravity, collision with walls etc.
+    '''
+    def __init__(self):
+        print "Physics initiated"
 
     def update(self):
-
-        #Determine movement direction(needed for collisions and sprite)
-        #if self.movepos[0] <= 0:
-        #    self.direction = "left"
-        #else: self.direction = "right"
-
-        newpos = self.rect.move(self.movepos)
-        if self.direction == "left":
-            self.MoveLeft(-self.speed)
-        elif self.direction == "right":
-            self.MoveRight(self.speed)
-        else: self.StopMoving()
-
         if self.movepos[1] <= 12:
-            self.movepos[1] += .5 #gravity
+            self.movepos[1] += 1 #gravity
 
         #newpos = self.rect.move([0,self.movepos[1]])
-        newpos = self.PlatformCollisionCheck(newpos)
-        newpos = self.WallCollisionCheck(newpos)
-
-        self.rect = newpos #move the character
-
-    def StopMoving(self):
-        self.movepos[0] = 0 
-
-    def MoveLeft(self, speed):
-        newpos = self.rect.move(-1,self.movepos[1])
-        if newpos.collidelist(walls) == -1:
-            self.movepos[0] = speed
-
-    def MoveRight(self, speed):
-        newpos = self.rect.move(1,self.movepos[1])
-        if newpos.collidelist(walls) == -1:
-            self.movepos[0] = speed
+        self.newpos = self.PlatformCollisionCheck(self.newpos)
+        self.newpos = self.WallCollisionCheck(self.newpos)
 
     def WallCollisionCheck(self, newpos):
         movepos = self.movepos
@@ -280,17 +248,12 @@ class mainChar(pygame.sprite.Sprite):
                 while newpos.collidelist(walls) != -1:
                     movepos[0] +=1
                     newpos = self.rect.move([movepos[0],0])
-                #self.evManager.Notify(CharMoveRequest('left'))
           
             elif movepos[0] >= 0: #going right
                 while newpos.collidelist(walls) != -1:
                     movepos[0] -=1
                     newpos = self.rect.move([movepos[0],0])
 
-                #self.evManager.Notify(CharMoveRequest('right'))
-            
-             
-            
         return newpos
    
 
@@ -310,6 +273,79 @@ class mainChar(pygame.sprite.Sprite):
         return newpos
 
 
+
+
+
+
+class mainChar(pygame.sprite.Sprite, PlatformerPhysics):
+    """The main character of the game
+    """
+    image = None
+
+    def __init__(self, evManager, startLocation):
+        pygame.sprite.Sprite.__init__(self)
+        PlatformerPhysics.__init__(self)
+        self.evManager = evManager
+        self.evManager.RegisterListener(self)
+        if mainChar.image == None:
+            mainChar.image, mainChar.rect = load_png('char2.png')
+
+        self.image = mainChar.image
+        screen = pygame.display.get_surface()
+        self.rect = self.image.get_rect()
+        self.startLocation = startLocation
+        self.rect.topleft = startLocation
+        self.area = screen.get_rect()
+        self.speed = 9
+        self.movepos = [0,0]
+        self.jumpable = 1
+        self.jumpabletimes = 2
+        self.direction = None
+        self.state = "still"
+
+    def update(self):
+
+        #Determine movement direction(needed for collisions and sprite)
+        #if self.movepos[0] <= 0:
+        #    self.direction = "left"
+        #else: self.direction = "right"
+
+        self.newpos = self.rect.move(self.movepos)
+        if self.direction == "left":
+            self.MoveLeft(-self.speed)
+        elif self.direction == "right":
+            self.MoveRight(self.speed)
+        else: self.StopMoving()
+
+        PlatformerPhysics.update(self)
+
+        self.rect = self.newpos #move the character
+        
+    def StopMoving(self):
+        self.movepos[0] = 0 
+
+    def MoveLeft(self, speed): 
+        newpos = self.rect.move(-1,self.movepos[1])
+        if newpos.collidelist(walls) == -1:
+            self.movepos[0] = speed
+
+    def MoveRight(self, speed):
+        newpos = self.rect.move(1,self.movepos[1])
+        if newpos.collidelist(walls) == -1:
+            self.movepos[0] = speed
+
+    def Jump(self):
+        if self.jumpable >= 1:
+            self.jumpable -= 1
+            self.movepos[1] = -2*self.speed
+                 
+    def Collide(self, collideobject):
+        if collideobject.deadly == True:
+            self.kill()
+        else:
+            collideobject.kill()
+
+    
     def Notify(self, event):
         if isinstance(event, CharMoveRequest):
             self.move = event.direction
@@ -323,20 +359,20 @@ class mainChar(pygame.sprite.Sprite):
                 self.movepos[0] = self.speed
  
             elif self.move == "jump":
-                if self.jumpable >= 1:
-                    self.jumpable -= 1
-                    self.movepos[1] = -2*self.speed
-                    
+                self.Jump()
+                   
             elif self.move == "stophorisontalmovement":
                 self.direction = None
                 self.state = "still"
                 self.movepos[0] = 0
     
     def __del__(self):
-        evManager.Notify(CharacterDeadEvent())
+        self.evManager.Notify(CharacterDeadEvent())
+        global mainchar
+        mainchar = mainChar(self.evManager, self.startLocation)
 
 
-
+    
 
 class bounceBall(pygame.sprite.Sprite):
     """A ball that bounces around the screen
@@ -344,49 +380,61 @@ class bounceBall(pygame.sprite.Sprite):
     image = None
     
     def __init__(self, evManager, vector, startLocation):
-    	pygame.sprite.Sprite.__init__(self)
-    	self.evManager = evManager
-    	#self.evManager.RegisterListener( self )
+        pygame.sprite.Sprite.__init__(self)
+        self.evManager = evManager
+        #self.evManager.RegisterListener( self )
 
-    	if bounceBall.image is None:
-    		bounceBall.image, bounceBall.rect = load_png('ball1.png')
-    		
-    	self.image = bounceBall.image
-    	self.rect = self.image.get_rect()
-    	screen = pygame.display.get_surface()
-    	self.area = screen.get_rect()
-    	self.vector = vector
-    	self.rect.topleft = startLocation
+        if bounceBall.image is None:
+            bounceBall.image, bounceBall.rect = load_png('ball1.png')
+            
+        self.image = bounceBall.image
+        self.rect = self.image.get_rect()
+        screen = pygame.display.get_surface()
+        self.area = screen.get_rect()
+        self.vector = vector
+        self.rect.topleft = startLocation
+        self.deadly = False
+
     def update(self):
-    	newpos = self.calcnewpos(self.rect,self.vector)
-    	self.rect = newpos
-    	#Make ball bounce from windowborders
-    	(angle,z) = self.vector
-    	if not self.area.contains(newpos):
-    		from math import pi
-    		tl = not self.area.collidepoint(newpos.topleft)
-    		tr = not self.area.collidepoint(newpos.topright)
-    		bl = not self.area.collidepoint(newpos.bottomleft)
-    		br = not self.area.collidepoint(newpos.bottomright)
-    		if tr and tl or (br and bl):
-    			angle = -angle
-    		if tl and bl:
-    			angle = pi - angle
-    		if tr and br:
-    			angle = pi - angle
-    	self.vector = (angle,z)
-    	
+        newpos = self.calcnewpos(self.rect,self.vector)
+        #collisioncheck with player
+        #if newpos.collidedict(existinginstances) == "player":
+        #    self.kill()
+        self.rect = newpos
+        #Make ball bounce from windowborders
+        (angle,z) = self.vector
+        if not self.area.contains(newpos):
+            from math import pi
+            tl = not self.area.collidepoint(newpos.topleft)
+            tr = not self.area.collidepoint(newpos.topright)
+            bl = not self.area.collidepoint(newpos.bottomleft)
+            br = not self.area.collidepoint(newpos.bottomright)
+            if tr and tl or (br and bl):
+                angle = -angle
+            if tl and bl:
+                angle = pi - angle
+            if tr and br:
+                angle = pi - angle
+        self.vector = (angle,z)
+        
 
     def calcnewpos(self,rect,vector):
-    	(angle,z) = vector
-    	(dx, dy) = (z*math.cos(angle), z*math.sin(angle))
-    	return rect.move(dx,dy)
+        (angle,z) = vector
+        (dx, dy) = (z*math.cos(angle), z*math.sin(angle))
+        return rect.move(dx,dy)
 
-    	
-class badGuy(pygame.sprite.Sprite):
+    def Collide(self, collideobject):
+        collideobject.movepos[1] = -collideobject.speed
+
+    def __del__(self):
+        badGuysSprites.add(bounceBall(self.evManager,(random.random()*2,5), [0,0]))
+        badGuysSprites.add(bounceBall(self.evManager,(random.random()*2,5), [0,0]))
+        
+class badGuy(pygame.sprite.Sprite, PlatformerPhysics):
     image = None
     def __init__(self,evManager,startLocation):
         pygame.sprite.Sprite.__init__(self)
+        PlatformerPhysics.__init__(self)
         self.evManager = evManager
         if badGuy.image is None:
             badGuy.image, badGuy.rect = load_png('badguy1.png')
@@ -396,10 +444,50 @@ class badGuy(pygame.sprite.Sprite):
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
         self.rect.topleft = startLocation
+        self.movepos = [0,0]
+        self.jumpable = 1
+        self.jumpabletimes = 5 
+        self.speed = 5
+        self.deadly = True
     
     def update(self):
-        newpos = self.rect.move(1,1)
-        self.rect = newpos
+        self.newpos = self.rect.move(self.movepos)
+        PlatformerPhysics.update(self)
+        self.rect = self.newpos
+        if self.movepos[1] << 0: #Falling
+            self.Jump()
+        if not self.rect.colliderect(self.area):
+            self.kill()
+
+        if mainchar.rect.centerx >= self.rect.centerx: #chase mainchar
+            self.MoveRight(self.speed)
+        else:
+            self.MoveLeft(-self.speed)
+
+    def StopMoving(self):
+        self.movepos[0] = 0 
+
+    def MoveLeft(self, speed): 
+        newpos = self.rect.move(-1,self.movepos[1])
+        if newpos.collidelist(walls) == -1:
+            self.movepos[0] = speed
+
+    def MoveRight(self, speed):
+        newpos = self.rect.move(1,self.movepos[1])
+        if newpos.collidelist(walls) == -1:
+            self.movepos[0] = speed
+
+    def Jump(self):
+        if self.jumpable >= 1:
+            self.jumpable -= 1
+            self.movepos[1] = -2*self.speed
+     
+
+    def Collide(self, collideobject):
+        print "bigouch!"
+
+    def __del__(self):
+        badGuysSprites.add(badGuy(self.evManager, [0,0]))
 
 class solidPlatform(pygame.sprite.Sprite):
     image = None
@@ -454,7 +542,7 @@ class Level1:
         platform1 = solidPlatform([390,300])
         platform2 = solidPlatform([390,390])
         wall = solidWall([390,300])
-        spritegroup.add(player, self.ball, platform, platform1, platform2, wall)
+        badGuysSprites.add(player, self.ball, platform, platform1, platform2, wall)
 
 
 
