@@ -16,8 +16,6 @@ from main import *
 global walls
 walls = []
 
-global platformlist
-platformlist = []
 class Event:
     """event superclass"""
     def __init__(self):
@@ -174,7 +172,7 @@ class LevelController:
         for i in level["badguys"]:
             badGuysSprites.add(badGuy(evManager, i))
         for i in level["balls"]:
-            badGuysSprites.add(bounceBall(evManager, (1,5), i))
+            badGuysSprites.add(gravityBouncyBall(evManager, i))
         for i in level["platforms"]:
             background.blit(solidPlatform(i).image,i)
         for i in level["walls"]:
@@ -222,6 +220,8 @@ class CollisionController:
 '''
 ##################### END OF MVC and mediator objects####################
 '''
+
+
 class PlatformerPhysics:
     '''Main object for objects that need physics
        like gravity, collision with walls etc.
@@ -230,50 +230,105 @@ class PlatformerPhysics:
         print "Physics initiated"
 
     def update(self):
-        if self.movepos[1] <= 12:
-            self.movepos[1] += 1 #gravity
+        if self.newpos.move(0,1).collidelist(walls) == -1: #not standing on ground
+            if self.movepos[1] <= 12:
+                self.movepos[1] += 1 #gravity
 
-        #newpos = self.rect.move([0,self.movepos[1]])
-        self.newpos = self.PlatformCollisionCheck(self.newpos)
         self.newpos = self.WallCollisionCheck(self.newpos)
 
     def WallCollisionCheck(self, newpos):
         movepos = self.movepos
+        colindex = newpos.collidelist(walls)
+ 
+        #collision with horisontal platforms
+        if colindex != -1:
+            if movepos[1] <= 0: #going up
+                if walls[colindex].bottom <= self.rect.top: #wall overtop
+                    movepos[1] = walls[colindex].bottom - self.rect.top 
+                    newpos = self.rect.move(movepos)
+          
+            elif movepos[1] >= 0: #going down
+                if walls[colindex].top >= self.rect.bottom: #wall underneath
+                    movepos[1] = walls[colindex].top - self.rect.bottom 
+                    newpos = self.rect.move(movepos)
+                    self.jumpable = self.jumpabletimes
+    
+        colindex = newpos.collidelist(walls)
         #collision with vertical walls
-        if newpos.collidelist(walls) != -1:
-            #newpos = self.rect.move([0,self.movepos[1]])
-            
-            #if self.direction == "left":
+        if colindex != -1:
             if movepos[0] <= 0: #going left
-                while newpos.collidelist(walls) != -1:
-                    movepos[0] +=1
-                    newpos = self.rect.move([movepos[0],0])
+                if walls[colindex].right <= self.rect.left: #wall on the left side
+                    movepos[0] = walls[colindex].right - self.rect.left 
+                    newpos = self.rect.move(movepos)
           
             elif movepos[0] >= 0: #going right
-                while newpos.collidelist(walls) != -1:
-                    movepos[0] -=1
-                    newpos = self.rect.move([movepos[0],0])
+                if walls[colindex].left >= self.rect.right: #wall on the right side
+                    movepos[0] = walls[colindex].left - self.rect.right 
+                    newpos = self.rect.move(movepos)
 
+ 
         return newpos
    
+class ProjectilePhysics:
+    '''A superclass for all projectiles bouncing off walls'''
 
-    def PlatformCollisionCheck(self, newpos):
+    def __init__(self, angle, speed, gravity=None):
+        print "Projectile Physics initiated"
+        self.angle = angle
+        self.speed = speed
+        self.gravity = gravity
+        self.movepos = [0,0]
+
+    def update(self):
+        self.newpos = self.rect.move(self.calcnewpos())
+        self.newpos = self.WallCollisionCheck(self.newpos)
+        self.rect = self.newpos  
+
+    def WallCollisionCheck(self, newpos):
+        movepos = self.movepos
+        colindex = newpos.collidelist(walls)
+        pi = math.pi
+ 
         #collision with horisontal platforms
-        colindex = newpos.collidelist(platformlist) #returns index -> rect
-        if self.movepos[1] >= 0 and colindex != -1:
-            if platformlist[colindex].top << self.rect.bottom:
-                while newpos.collidelist(platformlist) != -1: #make soft landing
-                    self.movepos[1] -=1
-                    newpos = self.rect.move([0,self.movepos[1]])
-                newpos = self.rect.move([self.movepos[0],0])
-                self.jumpable = self.jumpabletimes
-        if self.movepos[1] <= 0 and colindex != -1: #nocollide = -1
-            if platformlist[colindex].bottom << self.rect.top:
-                while newpos.collidelist(platformlist) != -1: #make soft headbump
-                    self.movepos[1] +=1
-                    newpos = self.rect.move([-self.movepos[0],self.movepos[1]])
-            newpos = self.rect.move([self.movepos[0],0])
+        if colindex != -1:
+            if movepos[1] <= 0: #going up
+                if walls[colindex].bottom <= self.rect.top: #wall overtop
+                    movepos[1] = walls[colindex].bottom - self.rect.top 
+                    newpos = self.rect.move(movepos)
+                    self.angle = -self.angle
+          
+            elif movepos[1] >= 0: #going down
+                if walls[colindex].top >= self.rect.bottom: #wall underneath
+                    movepos[1] = walls[colindex].top - self.rect.bottom 
+                    newpos = self.rect.move(movepos)
+                    self.angle = -self.angle
+    
+        colindex = newpos.collidelist(walls)
+        #collision with vertical walls
+        if colindex != -1:
+            if movepos[0] <= 0: #going left
+                if walls[colindex].right <= self.rect.left: #wall on the left side
+                    movepos[0] = walls[colindex].right - self.rect.left 
+                    newpos = self.rect.move(movepos)
+                    self.angle = pi - self.angle
+          
+            elif movepos[0] >= 0: #going right
+                if walls[colindex].left >= self.rect.right: #wall on the right side
+                    movepos[0] = walls[colindex].left - self.rect.right 
+                    newpos = self.rect.move(movepos)
+                    self.angle = pi - self.angle
         return newpos
+
+    def calcnewpos(self):
+        dx, dy = self.speed*math.cos(self.angle), self.speed*math.sin(self.angle)
+        self.movepos = [dx,dy]
+        newpos = self.rect.move(self.movepos)
+        if newpos.move(0,1).collidelist(walls) == -1: #not standing on ground
+            if self.gravity:
+                if self.movepos[1] <= 31:
+                    self.movepos[1] += 1 #gravity
+        return self.movepos
+        
 
 class mainChar(pygame.sprite.Sprite, PlatformerPhysics):
     """The main character of the game
@@ -414,6 +469,7 @@ class bounceBall(pygame.sprite.Sprite):
     def calcnewpos(self,rect,vector):
         (angle,z) = vector
         (dx, dy) = (z*math.cos(angle), z*math.sin(angle))
+        self.movepos = [dx,dy]
         return rect.move(dx,dy)
 
     def Collide(self, collideobject):
@@ -438,7 +494,7 @@ class badGuy(pygame.sprite.Sprite, PlatformerPhysics):
         self.rect.topleft = startLocation
         self.movepos = [0,0]
         self.jumpable = 1
-        self.jumpabletimes = 5 
+        self.jumpabletimes = 1 
         self.speed = 5
         self.deadly = True
     
@@ -491,9 +547,7 @@ class solidPlatform(pygame.sprite.Sprite):
         self.image = solidPlatform.image
         self.rect = self.image.get_rect()
         self.rect.topleft = startLocation
-        wall1 = platformWall(startLocation)
-        wall2 = platformWall((self.rect.topright[0] -1,self.rect.topright[1]))
-        platformlist.append(self.rect)
+        walls.append(self.rect)
     
 
 class solidWall(pygame.sprite.Sprite):
@@ -508,16 +562,70 @@ class solidWall(pygame.sprite.Sprite):
         self.area = screen.get_rect()
         self.rect.topleft = startLocation
         walls.append(self.rect)
-        platformlist.append(Rect((self.rect.bottomleft,[self.rect.width, 1])))
-        platformlist.append(Rect((self.rect.topleft,[self.rect.width, 1])))
     
+class bouncyBall(pygame.sprite.Sprite, ProjectilePhysics):
+    """A ball that bounces from objects
+    """
+    image = None
+    
+    def __init__(self, evManager, startLocation):
+        pygame.sprite.Sprite.__init__(self)
+        ProjectilePhysics.__init__(self,1,5)
+        self.evManager = evManager
+
+        if bounceBall.image is None:
+            bounceBall.image, bounceBall.rect = load_png('ball1.png')
+            
+        self.image = bounceBall.image
+        self.rect = self.image.get_rect()
+        self.area = screen.get_rect()
+        self.rect.topleft = startLocation
+        self.deadly = False
+        #self.movepos = [0,0]
+
+    def update(self):
+        #self.rect = self.rect.move(self.movepos)
+        ProjectilePhysics.update(self)
+    
+    def Collide(self, collideobject):
+        print "ouch!"
+
+
+class gravityBouncyBall(pygame.sprite.Sprite, ProjectilePhysics):
+    """A ball with gravity that bounces from objects
+    """
+    image = None
+    
+    def __init__(self, evManager, startLocation):
+        pygame.sprite.Sprite.__init__(self)
+        ProjectilePhysics.__init__(self,1,5,True)
+        self.evManager = evManager
+
+        if bounceBall.image is None:
+            bounceBall.image, bounceBall.rect = load_png('ball1.png')
+            
+        self.image = bounceBall.image
+        self.rect = self.image.get_rect()
+        self.area = screen.get_rect()
+        self.rect.topleft = startLocation
+        self.deadly = False
+        #self.movepos = [0,0]
+
+    def update(self):
+        #self.rect = self.rect.move(self.movepos)
+        ProjectilePhysics.update(self)
+    
+    def Collide(self, collideobject):
+        print "ouch!"
+
+
         
 
         
-class platformWall:
-    def __init__(self,startLocation):
-        self.rect = Rect(startLocation,[1,30])
-        walls.append(self.rect)
+
+        
+
+        
 
             
 '''
