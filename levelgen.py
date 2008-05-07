@@ -24,26 +24,63 @@ background.fill([255,255,255])
 screen.blit(background,[0,0])
 pygame.display.flip()
 running = 1
+objsprites = pygame.sprite.Group()
+mousesprite = pygame.sprite.RenderUpdates()
+
+class mouseSprite(pygame.sprite.Sprite):
+    def __init__(self, (image,rect)):
+        pygame.sprite.Sprite.__init__(self)
+        self.image,self.rect = image,rect
+    def update(self, image=None):
+        self.rect.topleft = mousepos
+        if image:
+            self.image = image
+
+
+class imgOfObject(pygame.sprite.Sprite):
+    def __init__(self, (image,rect), pos):
+        pygame.sprite.Sprite.__init__(self)
+        self.image,self.rect = image,rect
+        self.rect.topleft = pos
+
+def alignToGrid((x,y)):
+    #makes use of pythons way of rounding to integers
+    xout = x/32*32
+    yout = y/32*32
+    return (xout,yout)
+imgrect = load_png(spritelist[listorderindex])
+mousesprite.add(mouseSprite(imgrect))
 
 while running == 1:
     if pygame.mouse.get_focused:
+        mousepos = alignToGrid(pygame.mouse.get_pos())
         for event in pygame.event.get():
             if event.type == QUIT:
                 running = 0
             if event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    mousepos = pygame.mouse.get_pos()
+                    mousepos = alignToGrid(pygame.mouse.get_pos())
                     leveldatadict[listorder[listorderindex]].append(mousepos)
-                    img, rect = load_png(spritelist[listorderindex])
-                    screen.blit(img,mousepos)
+                    background.blit(imgOfObject(imgrect,mousepos).image, mousepos)
+#                    objsprites.add(imgOfObject(imgrect,mousepos))
                 if event.button == 3:
                     listorderindex += 1
-                    try: print listorder[listorderindex]
-                    except IndexError: listorderindex = 0
+                    try: 
+                        print listorder[listorderindex]
+                        imgrect = load_png(spritelist[listorderindex])
+                        mousesprite.update(imgrect[0])
+                    except IndexError: 
+                        listorderindex = 1
+                        imgrect = load_png(spritelist[listorderindex])
+                        mousesprite.update(imgrect[0])
+
 
                 print event.button
                 print pygame.mouse.get_pos()
-    pygame.display.flip()
+    mousesprite.update()
+    objsprites.draw(background)
+    screen.blit(background,(0,0))
+    pygame.display.update(mousesprite.draw(screen))
 print leveldatadict
 
 

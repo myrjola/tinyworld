@@ -133,14 +133,16 @@ class PygameView:
     def __init__(self,evManager):
         self.evManager = evManager
         evManager.RegisterListener(self)
-        self.screen = pygame.display.set_mode([1024,768])
+        global screen
+        screen = pygame.display.set_mode([1024,768])
         global badGuysSprites
         badGuysSprites = pygame.sprite.RenderUpdates()
         global goodGuysSprites
         goodGuysSprites = pygame.sprite.RenderUpdates()
-        self.background = pygame.Surface([1024, 768])
-        self.background.fill([255,255,255])
-        self.screen.blit(self.background, [0,0])
+        global background
+        background = pygame.Surface([1024, 768])
+        background.fill([255,255,255])
+        screen.blit(background, [0,0])
         pygame.display.flip()
         evManager.Notify(DisplayReady())
             
@@ -149,14 +151,15 @@ class PygameView:
         if isinstance( event, TickEvent ):
             badGuysSprites.update()
             goodGuysSprites.update()
-            rectlist = badGuysSprites.draw(self.screen) + goodGuysSprites.draw(self.screen)
+            rectlist = badGuysSprites.draw(screen) + goodGuysSprites.draw(screen)
             pygame.display.update(rectlist)
-            badGuysSprites.clear(self.screen, self.background)
-            goodGuysSprites.clear(self.screen, self.background)
+            badGuysSprites.clear(screen, background)
+            goodGuysSprites.clear(screen, background)
 
 class LevelController:
     def __init__(self,evManager):
         self.evManager = evManager
+        
         
     def Notify(self, event):
         if isinstance(event, DisplayReady):
@@ -173,9 +176,11 @@ class LevelController:
         for i in level["balls"]:
             badGuysSprites.add(bounceBall(evManager, (1,5), i))
         for i in level["platforms"]:
-            badGuysSprites.add(solidPlatform(i))
+            background.blit(solidPlatform(i).image,i)
         for i in level["walls"]:
-            badGuysSprites.add(solidWall(i))
+            background.blit(solidWall(i).image,i)
+        screen.blit(background,(0,0))
+        pygame.display.flip()
 
 
     def OpenLevelFile(self,file):
@@ -238,7 +243,6 @@ class PlatformerPhysics:
         if newpos.collidelist(walls) != -1:
             #newpos = self.rect.move([0,self.movepos[1]])
             
-            
             #if self.direction == "left":
             if movepos[0] <= 0: #going left
                 while newpos.collidelist(walls) != -1:
@@ -254,24 +258,22 @@ class PlatformerPhysics:
    
 
     def PlatformCollisionCheck(self, newpos):
-         #collision with horisontal platforms
-        if self.movepos[1] >= 0 and newpos.collidelist(platformlist) != -1:
-            while newpos.collidelist(platformlist) != -1: #make soft landing
-                self.movepos[1] -=1
-                newpos = self.rect.move([0,self.movepos[1]])
-            newpos = self.rect.move([self.movepos[0],0])
-            self.jumpable = self.jumpabletimes
-        if self.movepos[1] <= 0 and newpos.collidelist(platformlist) != -1: #nocollide = -1
-            while newpos.collidelist(platformlist) != -1: #make soft headbump
-                self.movepos[1] +=1
-                newpos = self.rect.move([-self.movepos[0],self.movepos[1]])
+        #collision with horisontal platforms
+        colindex = newpos.collidelist(platformlist) #returns index -> rect
+        if self.movepos[1] >= 0 and colindex != -1:
+            if platformlist[colindex].top << self.rect.bottom:
+                while newpos.collidelist(platformlist) != -1: #make soft landing
+                    self.movepos[1] -=1
+                    newpos = self.rect.move([0,self.movepos[1]])
+                newpos = self.rect.move([self.movepos[0],0])
+                self.jumpable = self.jumpabletimes
+        if self.movepos[1] <= 0 and colindex != -1: #nocollide = -1
+            if platformlist[colindex].bottom << self.rect.top:
+                while newpos.collidelist(platformlist) != -1: #make soft headbump
+                    self.movepos[1] +=1
+                    newpos = self.rect.move([-self.movepos[0],self.movepos[1]])
             newpos = self.rect.move([self.movepos[0],0])
         return newpos
-
-
-
-
-
 
 class mainChar(pygame.sprite.Sprite, PlatformerPhysics):
     """The main character of the game
@@ -287,7 +289,7 @@ class mainChar(pygame.sprite.Sprite, PlatformerPhysics):
             mainChar.image, mainChar.rect = load_png('char2.png')
 
         self.image = mainChar.image
-        screen = pygame.display.get_surface()
+        #screen = pygame.display.get_surface()
         self.rect = self.image.get_rect()
         self.startLocation = startLocation
         self.rect.topleft = startLocation
@@ -328,9 +330,11 @@ class mainChar(pygame.sprite.Sprite, PlatformerPhysics):
             self.movepos[0] = speed
 
     def Jump(self):
-        if self.jumpable >= 1:
-            self.jumpable -= 1
-            self.movepos[1] = -2*self.speed
+        newpos = self.rect.move(self.movepos[0],-1)
+        if newpos.collidelist(walls) == -1:
+            if self.jumpable >= 1:
+                self.jumpable -= 1
+                self.movepos[1] = -2*self.speed
                  
     def Collide(self, collideobject):
         if collideobject.deadly == True:
@@ -379,7 +383,6 @@ class bounceBall(pygame.sprite.Sprite):
             
         self.image = bounceBall.image
         self.rect = self.image.get_rect()
-        screen = pygame.display.get_surface()
         self.area = screen.get_rect()
         self.vector = vector
         self.rect.topleft = startLocation
@@ -431,7 +434,6 @@ class badGuy(pygame.sprite.Sprite, PlatformerPhysics):
 
         self.image = badGuy.image
         self.rect = self.image.get_rect()
-        screen = pygame.display.get_surface()
         self.area = screen.get_rect()
         self.rect.topleft = startLocation
         self.movepos = [0,0]
@@ -488,10 +490,9 @@ class solidPlatform(pygame.sprite.Sprite):
 
         self.image = solidPlatform.image
         self.rect = self.image.get_rect()
-        screen = pygame.display.get_surface()
         self.rect.topleft = startLocation
         wall1 = platformWall(startLocation)
-        wall2 = platformWall(self.rect.topright)
+        wall2 = platformWall((self.rect.topright[0] -1,self.rect.topright[1]))
         platformlist.append(self.rect)
     
 
@@ -504,20 +505,19 @@ class solidWall(pygame.sprite.Sprite):
         
         self.image = solidWall.image
         self.rect = self.image.get_rect()
-        screen = pygame.display.get_surface()
         self.area = screen.get_rect()
         self.rect.topleft = startLocation
         walls.append(self.rect)
-        platformlist.append(Rect((self.rect.bottomleft,[self.rect.width, 1])).inflate(-5,0))
-        platformlist.append(Rect((self.rect.topleft,[self.rect.width, 1])).inflate(-5,0))
+        platformlist.append(Rect((self.rect.bottomleft,[self.rect.width, 1])))
+        platformlist.append(Rect((self.rect.topleft,[self.rect.width, 1])))
+    
         
 
         
 class platformWall:
     def __init__(self,startLocation):
-        self.rect = Rect(startLocation,[1,17])
+        self.rect = Rect(startLocation,[1,30])
         walls.append(self.rect)
-        screen = pygame.display.get_surface()
 
             
 '''
