@@ -172,7 +172,7 @@ class LevelController:
         for i in level["badguys"]:
             badGuysSprites.add(badGuy(evManager, i))
         for i in level["balls"]:
-            badGuysSprites.add(gravityBouncyBall(evManager, i))
+            badGuysSprites.add(bouncyBall(evManager, i))
         for i in level["platforms"]:
             background.blit(solidPlatform(i).image,i)
         for i in level["walls"]:
@@ -319,14 +319,17 @@ class ProjectilePhysics:
                     self.angle = pi - self.angle
         return newpos
 
+        
+
     def calcnewpos(self):
         dx, dy = self.speed*math.cos(self.angle), self.speed*math.sin(self.angle)
-        self.movepos = [dx,dy]
+        self.movepos = [dx, dy]
         newpos = self.rect.move(self.movepos)
         if newpos.move(0,1).collidelist(walls) == -1: #not standing on ground
             if self.gravity:
                 if self.movepos[1] <= 31:
                     self.movepos[1] += 1 #gravity
+                    self.angle = math.atan2(self.movepos[1],self.movepos[0])
         return self.movepos
         
 
