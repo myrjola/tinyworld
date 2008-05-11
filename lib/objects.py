@@ -347,6 +347,8 @@ class mainChar(pygame.sprite.Sprite, PlatformerPhysics):
             mainChar.image, mainChar.rect = load_png('char2.png')
 
         self.image = mainChar.image
+        self.imageright = self.image
+        self.imageleft = pygame.transform.flip(self.imageright, True, False)
         #screen = pygame.display.get_surface()
         self.rect = self.image.get_rect()
         self.startLocation = startLocation
@@ -366,8 +368,10 @@ class mainChar(pygame.sprite.Sprite, PlatformerPhysics):
         self.newpos = self.rect.move(self.movepos)
         if self.direction == "left":
             self.MoveLeft(-self.speed)
+            self.image = self.imageleft
         elif self.direction == "right":
             self.MoveRight(self.speed)
+            self.image = self.imageright
         else: self.StopMoving()
 
         PlatformerPhysics.update(self)
@@ -492,11 +496,13 @@ class badGuy(pygame.sprite.Sprite, PlatformerPhysics):
             badGuy.image, badGuy.rect = load_png('badguy1.png')
 
         self.image = badGuy.image
+        self.imageright = self.image
+        self.imageleft = pygame.transform.flip(self.imageright,True,False)
         self.rect = self.image.get_rect()
         self.area = screen.get_rect()
         self.rect.topleft = startLocation
         self.movepos = [0,0]
-        self.jumpable = 1
+        self.jumpable = 0
         self.jumpabletimes = 1 
         self.speed = 5
         self.deadly = True
@@ -505,15 +511,19 @@ class badGuy(pygame.sprite.Sprite, PlatformerPhysics):
         self.newpos = self.rect.move(self.movepos)
         PlatformerPhysics.update(self)
         self.rect = self.newpos
-        if self.movepos[1] << 0: #Falling
+        if self.rect.move(0,5).collidelist(walls) == -1: #Falling
             self.Jump()
         if not self.rect.colliderect(self.area):
             self.kill()
-
-        if mainchar.rect.centerx >= self.rect.centerx: #chase mainchar
+        #chase mainchar
+        if mainchar.rect.centerx >= self.rect.right: 
             self.MoveRight(self.speed)
-        else:
+            self.image = self.imageright
+        elif mainchar.rect.centerx <= self.rect.left:
             self.MoveLeft(-self.speed)
+            self.image = self.imageleft
+        else:
+            self.StopMoving()
 
     def StopMoving(self):
         self.movepos[0] = 0 
@@ -522,11 +532,15 @@ class badGuy(pygame.sprite.Sprite, PlatformerPhysics):
         newpos = self.rect.move(-1,self.movepos[1])
         if newpos.collidelist(walls) == -1:
             self.movepos[0] = speed
+        else:
+            self.Jump()
 
     def MoveRight(self, speed):
         newpos = self.rect.move(1,self.movepos[1])
         if newpos.collidelist(walls) == -1:
             self.movepos[0] = speed
+        else:
+            self.Jump()
 
     def Jump(self):
         if self.jumpable >= 1:
