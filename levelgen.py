@@ -59,6 +59,21 @@ while running == 1:
                 running = 0
             if event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
+                    level = str(pygame.mouse.get_pos()[0]/64) + \
+                            str(pygame.mouse.get_pos()[1]/64) 
+                    print "You chose: ", level
+                    running = 0
+ 
+running = 1
+
+while running == 1:
+    if pygame.mouse.get_focused:
+        mousepos = alignToGrid(pygame.mouse.get_pos())
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                running = 0
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
                     mousepos = alignToGrid(pygame.mouse.get_pos())
                     leveldatadict[listorder[listorderindex]].append(mousepos)
                     background.blit(imgOfObject(imgrect,mousepos).image, mousepos)

@@ -511,8 +511,6 @@ class badGuy(pygame.sprite.Sprite, PlatformerPhysics):
         self.newpos = self.rect.move(self.movepos)
         PlatformerPhysics.update(self)
         self.rect = self.newpos
-        if self.rect.move(0,5).collidelist(walls) == -1: #Falling
-            self.Jump()
         if not self.rect.colliderect(self.area):
             self.kill()
         #chase mainchar
@@ -532,15 +530,11 @@ class badGuy(pygame.sprite.Sprite, PlatformerPhysics):
         newpos = self.rect.move(-1,self.movepos[1])
         if newpos.collidelist(walls) == -1:
             self.movepos[0] = speed
-        else:
-            self.Jump()
 
     def MoveRight(self, speed):
         newpos = self.rect.move(1,self.movepos[1])
         if newpos.collidelist(walls) == -1:
             self.movepos[0] = speed
-        else:
-            self.Jump()
 
     def Jump(self):
         if self.jumpable >= 1:
