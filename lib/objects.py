@@ -15,6 +15,8 @@ from main import *
 
 global walls
 walls = []
+global mainCharAlive
+mainCharAlive = False
 
 class Event:
     """event superclass"""
@@ -39,6 +41,11 @@ class CharMoveRequest(Event):
 class DisplayReady(Event):
     def __init__(self):
         self.name = "Display Ready Event"
+class LevelChange(Event):
+    def __init__(self, x, y):
+        self.name = "Level Change Event"
+        self.left_or_right = x
+        self.up_or_down = y
 
 class EventManager:
     """The mediator betveen MVC"""
@@ -157,18 +164,31 @@ class PygameView:
 class LevelController:
     def __init__(self,evManager):
         self.evManager = evManager
-        
+        self.curlevel = [0,0]
         
     def Notify(self, event):
         if isinstance(event, DisplayReady):
             evManager = self.evManager
-            self.CreateLevel(self.OpenLevelFile('level3'))
+            self.CreateLevel(self.OpenLevelFile('00'))
+        if isinstance(event, LevelChange):
+            self.curlevel[0] += event.left_or_right
+            self.curlevel[1] += event.up_or_down
+            self.CreateLevel(self.OpenLevelFile(str(self.curlevel[0]) + str(self.curlevel[1])))
+
+
 
     def CreateLevel(self,level):
         evManager = self.evManager
+        background.fill([255,255,255])
+        badGuysSprites.empty()
+        if mainCharAlive:
+            mainchar.rect.topleft = [33,33]            
+            goodGuysSprites.add(mainchar)
+
+        walls = []
         for i in level["mainchar"]:
             global mainchar
-            mainchar = mainChar(evManager, i)
+            mainchar = mainChar(self.evManager,i)
         for i in level["badguys"]:
             badGuysSprites.add(badGuy(evManager, i))
         for i in level["balls"]:
@@ -360,6 +380,7 @@ class mainChar(pygame.sprite.Sprite, PlatformerPhysics):
         self.jumpabletimes = 2
         self.direction = None
         self.state = "still"
+        mainCharAlive = True
 
         goodGuysSprites.add(self)
 
@@ -375,6 +396,19 @@ class mainChar(pygame.sprite.Sprite, PlatformerPhysics):
         else: self.StopMoving()
 
         PlatformerPhysics.update(self)
+        #levelchange
+        if not self.rect.colliderect(self.area):
+            levelcord = [0,0]
+            if self.rect.right <= self.area.left:
+                levelcord[0] = -1
+            elif self.rect.left >= self.area.right:
+                levelcord[0] = 1
+            elif self.rect.top >= self.area.bottom:
+                levelcord[1] = 1
+            elif self.rect.bottom <= self.area.top:
+                levelcord[1] = -1
+            self.evManager.Notify(LevelChange(levelcord[0],levelcord[1]))
+            
 
         self.rect = self.newpos #move the character
         
@@ -426,7 +460,7 @@ class mainChar(pygame.sprite.Sprite, PlatformerPhysics):
                 self.movepos[0] = 0
     
     def __del__(self):
-        self.evManager.Notify(CharacterDeadEvent())
+        pass
 
     
 
