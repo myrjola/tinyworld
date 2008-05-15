@@ -633,7 +633,7 @@ class bouncyBall(pygame.sprite.Sprite, ProjectilePhysics):
         ProjectilePhysics.update(self)
     
     def Collide(self, collideobject):
-        print "ouch!"
+        print "ouch! ball hit"
 
 
 class gravityBouncyBall(pygame.sprite.Sprite, ProjectilePhysics):
