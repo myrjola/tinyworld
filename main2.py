@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 ########################################
-#main.py
+#main2.py
 #This is a simple platformer game test
 #I'm trying to learn pygame and python
 #let's hope it's going to be playable
