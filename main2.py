@@ -16,8 +16,7 @@ from pygame.locals import *
 
 #makes importing of modules in lib directory possible
 sys.path.insert(0, os.path.join("lib")) 
-import modelviewcontrol
-from modelviewcontrol import *
+
 from gameinstances import *
 from gamefunc import *
 
@@ -28,12 +27,12 @@ global screen
 def main():
     #Hopefully starts the game
     pygame.init()
-    observer = modelviewcontrol.Mediator()
-    keybd = KeyboardController(observer)
-    ticker = CPUController(observer)
-    levelcontrol = LevelController(observer)
-    viewcontrol = ViewController(observer)
-    collisioncontrol = CollisionController(observer)
+    mediator = Mediator()
+    keybd = KeyboardController(mediator)
+    ticker = CPUController(mediator)
+    levelcontrol = LevelController(mediator)
+    viewcontrol = ViewController(mediator)
+    collisioncontrol = CollisionController(mediator)
     # starts the while loop
     ticker.tickTock()
 

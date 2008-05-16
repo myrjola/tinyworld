@@ -198,6 +198,7 @@ class LevelController:
         for i in level["mainchar"]:
             global mainchar
             mainchar = MainChar(self.mediator,i)
+            goodGuysSprites.add(mainchar)
         for i in level["badguys"]:
             badGuysSprites.add(badGuy(mediator, i))
         for i in level["balls"]:

@@ -1,5 +1,8 @@
 
-import pygame, sys, os, pickle
+import pygame
+import sys
+import os
+import pickle
 from pygame.locals import *
 
 #makes importing of modules in lib directory possible
