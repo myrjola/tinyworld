@@ -89,10 +89,7 @@ class Mediator:
         del(observer)
     def inform(self, event):
         # Sends an event to all observers
-        print "mediator has been informed of event" + event.name
         for observer in self.observers:
-            print self.observers
-            print " has been informed of " + event.name
             observer.inform(event)
 
 ########### The Controllers ################
@@ -111,12 +108,10 @@ class KeyboardController:
                 ev = None
                 if input_event.type == QUIT:
                     ev = Quit()
-                    print "Quit"
 
                 elif input_event.type == KEYDOWN:
                     if input_event.key == K_ESCAPE:
                         ev = Quit()
-                        print "Quit"
 
                 if event.tickname == 'InGameTick':
                     # Movement of character possible
@@ -136,9 +131,7 @@ class KeyboardController:
                         keys = pygame.key.get_pressed()
                         if not 1 in [keys[K_LEFT], keys[K_RIGHT]]:
                             ev = MoveChar('stophorisontalmovement')
-                print ev            
                 if ev:
-                    print ev.name
                     self.mediator.inform(ev)
 
 class CPUController:
@@ -281,9 +274,9 @@ class ViewController:
                 print 'still to be done'    #TODO: draw menu
 
 
+########### Beginning of in-game objects #############
 
-
-
+########### Base Classes #############################
 
 class PlatformerPhysics:
     '''Main object for objects that need physics
@@ -395,19 +388,20 @@ class ProjectilePhysics:
                     self.angle = math.atan2(self.movepos[1],self.movepos[0])
         return self.movepos
         
+########### Sub Classes ###############################
 
 class MainChar(pygame.sprite.Sprite, PlatformerPhysics):
     """The main character of the game
     """
     image = None
 
-    def __init__(self, observer, startLocation):
+    def __init__(self, mediator, startLocation):
         pygame.sprite.Sprite.__init__(self)
         PlatformerPhysics.__init__(self)
-        self.observer = observer
-        self.observer.addObserver(self)
+        self.mediator = mediator
+        self.mediator.addObserver(self)
         if MainChar.image == None:
-            MainChar.image, MainChar.rect = load_png('char2.png')
+            MainChar.image, MainChar.rect = imgLoad('char2.png')
 
         self.image = MainChar.image
         self.imageright = self.image
@@ -450,7 +444,7 @@ class MainChar(pygame.sprite.Sprite, PlatformerPhysics):
                 levelcord[1] = 1
             elif self.rect.bottom <= self.area.top:
                 levelcord[1] = -1
-            self.observer.inform(LevelChange(levelcord[0],levelcord[1]))
+            self.mediator.inform(LevelChange(levelcord[0],levelcord[1]))
             
 
         self.rect = self.newpos #move the character
@@ -503,7 +497,7 @@ class MainChar(pygame.sprite.Sprite, PlatformerPhysics):
                 self.movepos[0] = 0
     
     def __del__(self):
-        pass
+        self.mediator.delObserver(self)
 
     
 
@@ -512,13 +506,13 @@ class bounceBall(pygame.sprite.Sprite):
     """
     image = None
     
-    def __init__(self, observer, vector, startLocation):
+    def __init__(self, mediator, vector, startLocation):
         pygame.sprite.Sprite.__init__(self)
-        self.observer = observer
-        #self.observer.addObserver( self )
+        self.mediator = mediator
+        #self.mediator.addmediator( self )
 
         if bounceBall.image is None:
-            bounceBall.image, bounceBall.rect = load_png('ball1.png')
+            bounceBall.image, bounceBall.rect = imgLoad('ball1.png')
             
         self.image = bounceBall.image
         self.rect = self.image.get_rect()
@@ -560,17 +554,17 @@ class bounceBall(pygame.sprite.Sprite):
         collideobject.movepos[1] = -collideobject.speed
 
     def __del__(self):
-        badGuysSprites.add(bounceBall(self.observer,(random.random()*2,5), [0,0]))
-        badGuysSprites.add(bounceBall(self.observer,(random.random()*2,5), [0,0]))
+        badGuysSprites.add(bounceBall(self.mediator,(random.random()*2,5), [0,0]))
+        badGuysSprites.add(bounceBall(self.mediator,(random.random()*2,5), [0,0]))
         
 class badGuy(pygame.sprite.Sprite, PlatformerPhysics):
     image = None
-    def __init__(self,observer,startLocation):
+    def __init__(self,mediator,startLocation):
         pygame.sprite.Sprite.__init__(self)
         PlatformerPhysics.__init__(self)
-        self.observer = observer
+        self.mediator = mediator
         if badGuy.image is None:
-            badGuy.image, badGuy.rect = load_png('badguy1.png')
+            badGuy.image, badGuy.rect = imgLoad('badguy1.png')
 
         self.image = badGuy.image
         self.imageright = self.image
@@ -623,14 +617,14 @@ class badGuy(pygame.sprite.Sprite, PlatformerPhysics):
         print "bigouch!"
 
     def __del__(self):
-        badGuysSprites.add(badGuy(self.observer, [0,0]))
+        badGuysSprites.add(badGuy(self.mediator, [0,0]))
 
 class solidPlatform(pygame.sprite.Sprite):
     image = None
     def __init__(self, startLocation):
         pygame.sprite.Sprite.__init__(self)
         if solidPlatform.image is None:
-            solidPlatform.image, solidPlatform.rect = load_png('solid.png')
+            solidPlatform.image, solidPlatform.rect = imgLoad('solid.png')
 
         self.image = solidPlatform.image
         self.rect = self.image.get_rect()
@@ -643,7 +637,7 @@ class solidWall(pygame.sprite.Sprite):
     def __init__(self, startLocation):
         pygame.sprite.Sprite.__init__(self)
         if solidWall.image is None:
-            solidWall.image, solidWall.rect = load_png('wall.png')
+            solidWall.image, solidWall.rect = imgLoad('wall.png')
         
         self.image = solidWall.image
         self.rect = self.image.get_rect()
@@ -656,13 +650,13 @@ class bouncyBall(pygame.sprite.Sprite, ProjectilePhysics):
     """
     image = None
     
-    def __init__(self, observer, startLocation):
+    def __init__(self, mediator, startLocation):
         pygame.sprite.Sprite.__init__(self)
         ProjectilePhysics.__init__(self,1,5)
-        self.observer = observer
+        self.mediator = mediator
 
         if bounceBall.image is None:
-            bounceBall.image, bounceBall.rect = load_png('ball1.png')
+            bounceBall.image, bounceBall.rect = imgLoad('ball1.png')
             
         self.image = bounceBall.image
         self.rect = self.image.get_rect()
@@ -678,19 +672,18 @@ class bouncyBall(pygame.sprite.Sprite, ProjectilePhysics):
     def Collide(self, collideobject):
         print "ouch!"
 
-
 class gravityBouncyBall(pygame.sprite.Sprite, ProjectilePhysics):
     """A ball with gravity that bounces from objects
     """
     image = None
     
-    def __init__(self, observer, startLocation):
+    def __init__(self, mediator, startLocation):
         pygame.sprite.Sprite.__init__(self)
         ProjectilePhysics.__init__(self,1,5,True)
-        self.observer = observer
+        self.mediator = mediator
 
         if bounceBall.image is None:
-            bounceBall.image, bounceBall.rect = load_png('ball1.png')
+            bounceBall.image, bounceBall.rect = imgLoad('ball1.png')
             
         self.image = bounceBall.image
         self.rect = self.image.get_rect()

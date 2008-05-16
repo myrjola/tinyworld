@@ -1,24 +1,24 @@
 ####################
 #gamefunc.py
-#library including useful functions
+#module including useful functions
 #for a game.
 #####################
 import pygame, os
 
-def load_png(name):
+def imgLoad(imgname):
 	'''Load image and return image object'''
-	fullname = os.path.join('images',name)
+	whole_path = os.path.join('images',imgname)
 	try: 
-		image = pygame.image.load(fullname)
-		if image.get_alpha() is None:
-			image = image.convert()
+		img = pygame.image.load(whole_path)
+		if img.get_alpha():
+			img = img.convert_alpha()
 		else:
-			image = image.convert_alpha()
+			img = img.convert()
 	
 	except pygame.error, message:
-		print 'Cannot load image: ', fullname
+		print 'Image not found: ', whole_path
 		raise SystemExit, message
-	return image, image.get_rect()
+	return img, img.get_rect()
 
 
 

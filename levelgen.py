@@ -22,7 +22,7 @@ pygame.init()
 screen = pygame.display.set_mode([1024,768])
 background = pygame.Surface([1024,768])
 background.fill([255,255,255])
-levelmapimg = load_png('levelmap.png')[0]
+levelmapimg = imgLoad('levelmap.png')[0]
 screen.blit(levelmapimg,[0,0])
 pygame.display.flip()
 running = 1
@@ -61,7 +61,7 @@ def chooseLevel():
             mousepos = alignToGrid(pygame.mouse.get_pos())
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    raise SystemExitStatus('message')
+                    sys.exit()
                 if event.type == MOUSEBUTTONDOWN:
                     if event.button == 1:
                         global level
@@ -83,7 +83,7 @@ def makeLevel():
     badguylist = []
     platflist = []
     wallist = []
-    imgrect = load_png(spritelist[listorderindex])
+    imgrect = imgLoad(spritelist[listorderindex])
     mousesprite.add(mouseSprite(imgrect))
     global mousepos
     global leveldatadict
@@ -105,11 +105,11 @@ def makeLevel():
                         listorderindex += 1
                         try: 
                             print listorder[listorderindex]
-                            imgrect = load_png(spritelist[listorderindex])
+                            imgrect = imgLoad(spritelist[listorderindex])
                             mousesprite.update(imgrect[0])
                         except IndexError: 
                             listorderindex = 1
-                            imgrect = load_png(spritelist[listorderindex])
+                            imgrect = imgLoad(spritelist[listorderindex])
                             mousesprite.update(imgrect[0])
 
 
