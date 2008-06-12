@@ -77,6 +77,7 @@ def makeLevel():
     pygame.display.flip()
     listorder = ["mainchar","badguys","balls","platforms","walls"]
     spritelist = ["char2.png","badguy1.png","ball1.png","solid.png","wall.png"]
+    global leveldatadict
     leveldatadict = {"mainchar":[],"badguys":[],"balls":[],"platforms":[],"walls":[]}
     listorderindex = 0
     charlist = []
@@ -86,7 +87,6 @@ def makeLevel():
     imgrect = imgLoad(spritelist[listorderindex])
     mousesprite.add(mouseSprite(imgrect))
     global mousepos
-    global leveldatadict
 
     # The levelmaking interface
     while 1:
