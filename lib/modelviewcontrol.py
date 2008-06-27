@@ -220,9 +220,9 @@ class LevelController:
             self.container.mainchar = MainChar(self.mediator, self.container, i)
             self.container.goodGuysSprites.add(self.container.mainchar)
         for i in level["badguys"]:
-            badGuysSprites.add(badGuy(mediator, i))
+            self.container.badGuysSprites.add(badGuy(mediator, self.container, i))
         for i in level["balls"]:
-            badGuysSprites.add(bouncyBall(mediator, i))
+            self.container.badGuysSprites.add(bouncyBall(mediator, self.container, i))
         for i in level["platforms"]:
             platformrect = Rect(i, (96,32))
             self.container.solidwalls.append(platformrect)

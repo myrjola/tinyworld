@@ -81,8 +81,9 @@ class PlatformerPhysics:
 class ProjectilePhysics:
     '''A superclass for all projectiles bouncing off walls'''
 
-    def __init__(self, angle, speed, gravity=None):
+    def __init__(self, container, angle, speed, gravity=None):
         print "Projectile Physics initiated"
+        self.container = container
         self.angle = angle
         self.speed = speed
         self.gravity = gravity
@@ -95,35 +96,43 @@ class ProjectilePhysics:
 
     def WallCollisionCheck(self, newpos):
         movepos = self.movepos
-        colindex = newpos.collidelist(walls)
+        colindex = newpos.collidelist(self.container.solidwalls)
         pi = math.pi
  
         #collision with horisontal platforms
         if colindex != -1:
             if movepos[1] <= 0: #going up
-                if walls[colindex].bottom <= self.rect.top: #wall overtop
-                    movepos[1] = walls[colindex].bottom - self.rect.top 
+                if self.container.solidwalls[colindex].bottom <= self.rect.top: \
+                        #wall overtop
+                    movepos[1] = self.container.solidwalls[colindex].bottom - \
+                            self.rect.top 
                     newpos = self.rect.move(movepos)
                     self.angle = -self.angle
           
             elif movepos[1] >= 0: #going down
-                if walls[colindex].top >= self.rect.bottom: #wall underneath
-                    movepos[1] = walls[colindex].top - self.rect.bottom 
+                if self.container.solidwalls[colindex].top >= self.rect.bottom: \
+                        #wall underneath
+                    movepos[1] = self.container.solidwalls[colindex].top -\
+                            self.rect.bottom 
                     newpos = self.rect.move(movepos)
                     self.angle = -self.angle
     
-        colindex = newpos.collidelist(walls)
+        colindex = newpos.collidelist(self.container.solidwalls)
         #collision with vertical walls
         if colindex != -1:
             if movepos[0] <= 0: #going left
-                if walls[colindex].right <= self.rect.left: #wall on the left side
-                    movepos[0] = walls[colindex].right - self.rect.left 
+                if self.container.solidwalls[colindex].right <= self.rect.left:\
+                        #wall on the left side
+                    movepos[0] = self.container.solidwalls[colindex].right -\
+                            self.rect.left 
                     newpos = self.rect.move(movepos)
                     self.angle = pi - self.angle
           
             elif movepos[0] >= 0: #going right
-                if walls[colindex].left >= self.rect.right: #wall on the right side
-                    movepos[0] = walls[colindex].left - self.rect.right 
+                if self.container.solidwalls[colindex].left >= self.rect.right:\
+                        #wall on the right side
+                    movepos[0] = self.container.solidwalls[colindex].left -\
+                            self.rect.right 
                     newpos = self.rect.move(movepos)
                     self.angle = pi - self.angle
         return newpos
@@ -134,7 +143,7 @@ class ProjectilePhysics:
         dx, dy = self.speed*math.cos(self.angle), self.speed*math.sin(self.angle)
         self.movepos = [dx, dy]
         newpos = self.rect.move(self.movepos)
-        if newpos.move(0,1).collidelist(walls) == -1: #not standing on ground
+        if newpos.move(0,1).collidelist(self.container.solidwalls) == -1: #not standing on ground
             if self.gravity:
                 if self.movepos[1] <= 31:
                     self.movepos[1] += 1 #gravity
@@ -313,10 +322,11 @@ class bounceBall(pygame.sprite.Sprite):
         
 class badGuy(pygame.sprite.Sprite, PlatformerPhysics):
     image = None
-    def __init__(self,mediator,startLocation):
+    def __init__(self,mediator, container, startLocation):
         pygame.sprite.Sprite.__init__(self)
-        PlatformerPhysics.__init__(self)
+        PlatformerPhysics.__init__(self, container)
         self.mediator = mediator
+        self.container = container
         if badGuy.image is None:
             badGuy.image, badGuy.rect = imgLoad('badguy1.png')
 
@@ -324,7 +334,7 @@ class badGuy(pygame.sprite.Sprite, PlatformerPhysics):
         self.imageright = self.image
         self.imageleft = pygame.transform.flip(self.imageright,True,False)
         self.rect = self.image.get_rect()
-        self.area = screen.get_rect()
+        self.area = self.container.screen.get_rect()
         self.rect.topleft = startLocation
         self.movepos = [0,0]
         self.jumpable = 0
@@ -339,10 +349,10 @@ class badGuy(pygame.sprite.Sprite, PlatformerPhysics):
         if not self.rect.colliderect(self.area):
             self.kill()
         #chase mainchar
-        if mainchar.rect.centerx >= self.rect.right: 
+        if self.container.mainchar.rect.centerx >= self.rect.right: 
             self.MoveRight(self.speed)
             self.image = self.imageright
-        elif mainchar.rect.centerx <= self.rect.left:
+        elif self.container.mainchar.rect.centerx <= self.rect.left:
             self.MoveLeft(-self.speed)
             self.image = self.imageleft
         else:
@@ -353,12 +363,12 @@ class badGuy(pygame.sprite.Sprite, PlatformerPhysics):
 
     def MoveLeft(self, speed): 
         newpos = self.rect.move(-1,self.movepos[1])
-        if newpos.collidelist(walls) == -1:
+        if newpos.collidelist(self.container.solidwalls) == -1:
             self.movepos[0] = speed
 
     def MoveRight(self, speed):
         newpos = self.rect.move(1,self.movepos[1])
-        if newpos.collidelist(walls) == -1:
+        if newpos.collidelist(self.container.solidwalls) == -1:
             self.movepos[0] = speed
 
     def Jump(self):
@@ -401,17 +411,18 @@ class bouncyBall(pygame.sprite.Sprite, ProjectilePhysics):
     """
     image = None
     
-    def __init__(self, mediator, startLocation):
+    def __init__(self, mediator, container, startLocation):
         pygame.sprite.Sprite.__init__(self)
-        ProjectilePhysics.__init__(self,1,5)
+        ProjectilePhysics.__init__(self, container, 1, 5)
         self.mediator = mediator
+        self.container = container
 
         if bounceBall.image is None:
             bounceBall.image, bounceBall.rect = imgLoad('ball1.png')
             
         self.image = bounceBall.image
         self.rect = self.image.get_rect()
-        self.area = screen.get_rect()
+        self.area = self.container.screen.get_rect()
         self.rect.topleft = startLocation
         self.deadly = False
         #self.movepos = [0,0]
