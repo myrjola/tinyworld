@@ -140,7 +140,7 @@ makeLevel()
 imagepath = os.path.join('images','levelmap.png')
 minimg = pygame.transform.scale(background,(64,64))
 levelmapimg.blit(minimg,[int(level[0])*64,int(level[1])*64])
-pygame.image.save(levelmapimg,imagepath)
+pygame.image.save(levelmapimg, imagepath)
 
 
 
