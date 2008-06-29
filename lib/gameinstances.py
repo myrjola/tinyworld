@@ -15,10 +15,11 @@ from pygame.locals import *
 # makes importing of modules in lib directory possible
 sys.path.insert(0, os.path.join("lib")) 
 
+from events import *
 from gamefunc import *
 
 
-########### Base Classes #############################
+########### Base Classes ##############################
 
 class PlatformerPhysics:
     '''Main object for objects that need physics
@@ -201,12 +202,19 @@ class MainChar(pygame.sprite.Sprite, PlatformerPhysics):
             levelcord = [0,0]
             if self.rect.right <= self.area.left:
                 levelcord[0] = -1
+                self.newpos.centerx = 1024
+                self.newpos.centery -= 1 # to avoid falling through walls
             elif self.rect.left >= self.area.right:
                 levelcord[0] = 1
+                self.newpos.centerx = 0
+                self.newpos.centery -= 1 # to avoid falling through walls
             elif self.rect.top >= self.area.bottom:
                 levelcord[1] = 1
+                self.newpos.centery = 0
             elif self.rect.bottom <= self.area.top:
                 levelcord[1] = -1
+                self.newpos.centery = 768
+            self.rect = self.newpos # to avoid levelchange loop
             self.mediator.inform(LevelChange(levelcord[0],levelcord[1]))
             
 

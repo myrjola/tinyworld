@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.join("lib"))
 
 from gameinstances import *
 from gamefunc import *
+from events import *
 
 # some important global variables
 '''global walls
@@ -28,46 +29,6 @@ MAINCHARALIVE = 1
 '''
 global walls
 walls = []
-########### The Events #####################
-
-class Tick:
-    def __init__(self):
-        self.name = "Tick"
-
-class InGameTick(Tick):
-    def __init__(self):
-        Tick.__init__(self)
-        self.tickname = "InGameTick"
-
-class MenuTick(Tick):
-    def __init__(self):
-        Tick.__init__(self)
-        self.tickname = "MenuTick"
-
-class PauseTick(Tick):
-    def __init__(self):
-        self.tickname = "PauseTick"
-
-class Quit:
-    def __init__(self):
-        self.name = "Quit"
-
-class MoveChar:
-    def __init__(self, direction):
-        self.name = "MoveChar"
-        self.direction = direction 
-
-class DisplayReady:
-    def __init__(self):
-        self.name = "DisplayReady"
-
-class LevelChange:
-    def __init__(self, x, y):
-        self.name = "LevelChange"
-        self.left_or_right = x
-        self.up_or_down = y
-
-
 ########### The Mediator ###################
 
 class Mediator:
@@ -108,6 +69,7 @@ class Container:
         self.badGuysSprites = 0     # the enemies
         self.goodGuysSprites = 0    # the friends
         self.mainchar = 0           # hmm... what could this be
+        self.maincharalive = 0 
 
     def inform(self, event):
         # still nothing implemented, maybe in the future...
@@ -199,17 +161,21 @@ class LevelController:
         if event.name == 'DisplayReady':
             self.CreateLevel(self.OpenLevelFile('00'))
         if isinstance(event, LevelChange):
+            print "self.curlevel= ", self.curlevel
             self.curlevel[0] += event.left_or_right
             self.curlevel[1] += event.up_or_down
+            print "self.curlevel= ", self.curlevel
             self.CreateLevel(self.OpenLevelFile(str(self.curlevel[0]) +\
                     str(self.curlevel[1])))
 
 
 
     def CreateLevel(self,level):
+        # cleanup
         mediator = self.mediator
         self.container.background.fill([255,255,255])
         self.container.badGuysSprites.empty()
+        self.container.solidwalls = []
         '''
         if MAINCHARALIVE:
             mainchar.rect.topleft = [33,33]            
@@ -217,8 +183,10 @@ class LevelController:
         '''
         walls = []
         for i in level["mainchar"]:
-            self.container.mainchar = MainChar(self.mediator, self.container, i)
-            self.container.goodGuysSprites.add(self.container.mainchar)
+            if not self.container.maincharalive:
+                self.container.mainchar = MainChar(self.mediator, self.container, i) # init the mainchar
+                self.container.goodGuysSprites.add(self.container.mainchar)
+                self.container.maincharalive = 1
         for i in level["badguys"]:
             self.container.badGuysSprites.add(badGuy(mediator, self.container, i))
         for i in level["balls"]:
@@ -253,14 +221,15 @@ class CollisionController:
         self.container = container
 
     def inform(self, event):
-        if event.name == 'InGameTick':
-            collisions = pygame.sprite.groupcollide(self.container.goodGuysSprites, 
-                    self.container.badGuysSprites, False, False) #returns dictionary
-            for smashed in collisions: #"smashed"key returns collisionlist
-                for colobj in collisions[smashed]:
-                    print smashed, "collided with", colobj
-                    colobj.Collide(smashed) #badguy collision event 
-                    smashed.Collide(colobj) #goodguy collision event
+        if event.name == 'Tick':
+            if event.tickname == 'InGameTick':
+                collisions = pygame.sprite.groupcollide(self.container.goodGuysSprites, 
+                        self.container.badGuysSprites, False, False) #returns dictionary
+                for smashed in collisions: #"smashed"key returns collisionlist
+                    for colobj in collisions[smashed]:
+                        print smashed, "collided with", colobj
+                        colobj.Collide(smashed) #badguy collision event 
+                        smashed.Collide(colobj) #goodguy collision event
            
 ########### The ViewController #######################
 
