@@ -18,7 +18,6 @@ from pygame.locals import *
 #makes importing of modules in lib directory possible
 sys.path.insert(0, os.path.join("lib")) 
 
-import gameinstances
 import mvc
 
 def main():
