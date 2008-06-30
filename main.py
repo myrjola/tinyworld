@@ -14,24 +14,24 @@ import sys
 import pygame
 from pygame.locals import *
 
+
 #makes importing of modules in lib directory possible
 sys.path.insert(0, os.path.join("lib")) 
 
 import gameinstances
-import modelviewcontrol
+import mvc
 
 def main():
     #Hopefully starts the game
     pygame.init()
-    mediator = modelviewcontrol.Mediator()
-    container = modelviewcontrol.Container(mediator)
-    keybd = modelviewcontrol.KeyboardController(mediator)
-    ticker = modelviewcontrol.CPUController(mediator)
-    levelcontrol = modelviewcontrol.LevelController(mediator, container)
-    viewcontrol = modelviewcontrol.ViewController(mediator, container)
-    collisioncontrol = modelviewcontrol.CollisionController(mediator, container)
-    # starts the while loop
-    ticker.tickTock()
+    mediator = mvc.Mediator()
+    container = mvc.Container(mediator)
+    keybd = mvc.KeyboardController(mediator)
+    ticker = mvc.CPUController(mediator)
+    levelcontrol = mvc.LevelController(mediator, container)
+    viewcontrol = mvc.ViewController(mediator, container)
+    collisioncontrol = mvc.CollisionController(mediator, container)
+    ticker.tickTock() # starts the while loop
 
 if __name__ == '__main__':
     main()
