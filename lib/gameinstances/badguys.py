@@ -76,5 +76,5 @@ class badGuy(pygame.sprite.Sprite, phys.PlatformerPhysics):
         print "bigouch!"
 
     def __del__(self):
-        badGuysSprites.add(badGuy(self.mediator, [0,0]))
+        pass
 
