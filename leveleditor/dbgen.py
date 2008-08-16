@@ -18,7 +18,6 @@ def dirwalk(pathtowalk):
     for root, dirs, files in os.walk(pathtowalk):
         for filename in files:
             if filename[-3:] == '.py':
-                print filename
                 parsefile(os.path.join(root, filename))
 
 def parsefile(file):
@@ -26,21 +25,21 @@ def parsefile(file):
     # first the object
     for line in f:
         if line[:6] == 'class ':
-            print line
             objname = line[6:line.find('(')]
             # then the image
             for line in f:
                 imgindex = line.find('imgLoad')
                 if imgindex != -1:
-                    imgname = line[imgindex + 9:-2]
+                    imgname = line[imgindex + 9:-3]
                     dbdict[objname] = imgname
-                    print dbdict
                     break
     f.close()
                 
 def main():
+    if os.path.exists('dbgen.py'):
+        # to get to the project root if run from projectroot/leveleditor/
+        os.chdir(os.path.join(os.getcwd(), '..')) 
     dbfile = open('objdict.db', 'w')
-    os.chdir(os.path.join(os.getcwd(), '..')) # to get to the project root
     os.chdir(os.path.join(os.getcwd(), 'lib/gameinstances'))
     dirwalk(os.getcwd())
     print dbdict
