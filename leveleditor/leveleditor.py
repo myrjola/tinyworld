@@ -43,7 +43,8 @@ class mouseSprite(pygame.sprite.Sprite):
         if image:
             if image == 'noimage':
                 self.image.fill((0,0,0,0))
-            self.image = image
+            else:
+                self.image = image
         
 
 class placedObject(pygame.sprite.Sprite):
@@ -126,13 +127,17 @@ class levelEditingArea:
     def editLevel(self):
         mousepos = pygame.mouse.get_pos()
         mousepos = alignToGrid((mousepos[0] - 195, mousepos[1]))
-        self.objlist.append(placedObject(gamefunc.imgLoad(self.selbox.getValue()), \
-                mousepos, self.bgimage))
+        objimg = self.selbox.getValue()
+        if objimg != '':
+            self.objlist.append(placedObject(gamefunc.imgLoad(objimg), \
+                    mousepos, self.bgimage))
 
         
     
 def main():
+    clock = pygame.time.Clock()
     objdict = dbload('objdict.db')
+    imgcache = {}
     window = pygame.display.set_mode((1224, 768))
     gui.init(myscreen = window)
     app = gui.App(width=1224, height=768)
@@ -141,16 +146,28 @@ def main():
     spritegroup.add(cursor)
     objselbox = objSelectBox(app, objdict)
     leveleditor = levelEditingArea(app, objselbox)
+    objimg = 'noimage'
+    oldobjimg = 'noimage'
     running = True
     while running:
+        clock.tick(50)
         events = pygame.event.get()
         for event in events:
             if event.type == QUIT:
                 running = False
+        
         objimg = objselbox.getValue()
-        if len(objimg) > 1:
-            cursor.update(gamefunc.imgLoad(objimg)[0])
-        else: cursor.update()
+        if leveleditor.state == 'editlevel':
+            if objimg == oldobjimg:
+                cursor.update()
+            elif imgcache.has_key(objimg):
+                print 'new image'
+                cursor.update(imgcache[objimg])
+            else:
+                imgcache[objimg] = gamefunc.imgLoad(objimg)[0]
+        else:
+            cursor.update('noimage')
+        oldobjimg = objimg
         app.run(events)
         app.dirty = True
         app.draw()
