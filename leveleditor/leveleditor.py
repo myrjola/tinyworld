@@ -32,6 +32,11 @@ def alignToGrid((x,y)):
     yout = y/32*32
     return (xout,yout)
 
+def imgCacheFill(objdict, imgcache):
+    for objname, imgname in objdict.iteritems():
+        imgcache[imgname] = gamefunc.imgLoad(imgname)[0] 
+    return imgcache
+
 class mouseSprite(pygame.sprite.Sprite):
     def __init__(self, (image,rect)):
         pygame.sprite.Sprite.__init__(self)
@@ -48,9 +53,10 @@ class mouseSprite(pygame.sprite.Sprite):
         
 
 class placedObject(pygame.sprite.Sprite):
-    def __init__(self, (image, rect), pos, background):
+    def __init__(self, name, (image, rect), pos, background):
         pygame.sprite.Sprite.__init__(self)
-        self.image,self.rect = image,rect
+        self.name = name
+        self.image, self.rect = image, rect
         background.blit(image, pos)
         self.rect.topleft = pos
 
@@ -69,12 +75,12 @@ class objSelectBox:
         self.vbox.add(self.selectbox, self.b1, self.b2, self.b3)
         self.app.add(self.vbox)
         self.populate()
-        self.selectbox.connect(CLICK, self.getValue)
+        # self.selectbox.connect(CLICK, self.getValue)
 
     def populate(self):
         '''populates the selectbox with objects'''
         for objname, imgname in self.objdict.iteritems():
-            self.selectbox.add(objname, imgname)
+            self.selectbox.add(objname, objname)
 
     def getValue(self):
         return str(self.selectbox.values)[6:-3]
@@ -85,8 +91,9 @@ class levelEditingArea:
     representation of the objects placed on the level
     
     '''
-    def __init__(self, app, selbox):
+    def __init__(self, app, objdict, selbox):
         self.app = app
+        self.objdict = objdict
         self.selbox = selbox
         self.levelmap = gamefunc.imgLoad('levelmap.png')[0]
         self.image = self.levelmap.copy()
@@ -95,6 +102,8 @@ class levelEditingArea:
         self.imagewidget.connect(CLICK, self.clickedOn)
         self.app.add(self.imagewidget)
         self.state = 'chooselevel'
+        self.selbox.b1.connect(CLICK, self.saveLevel)
+        self.selbox.b2.connect(CLICK, self.clearLevel)
         self.selbox.b3.connect(CLICK, self.toChooseLevel)
 
     def clickedOn(self):
@@ -107,6 +116,7 @@ class levelEditingArea:
             self.objlist = []
             mousepos = pygame.mouse.get_pos()
             self.chosenlevel = str( (mousepos[0] - 195) / 64) + str(mousepos[1] / 64)
+            print self.chosenlevel
             self.openLevel(self.chosenlevel)
         else:
             self.editLevel()
@@ -125,27 +135,58 @@ class levelEditingArea:
         self.image.fill((255,255,255))
 
     def editLevel(self):
+        '''Places objects on the level'''
         mousepos = pygame.mouse.get_pos()
         mousepos = alignToGrid((mousepos[0] - 195, mousepos[1]))
-        objimg = self.selbox.getValue()
-        if objimg != '':
-            self.objlist.append(placedObject(gamefunc.imgLoad(objimg), \
+        objname = self.selbox.getValue()
+        if objname != '':
+            objimg = self.objdict[objname]
+            self.objlist.append(placedObject(objname, gamefunc.imgLoad(objimg), \
                     mousepos, self.bgimage))
+
+    def saveLevel(self):
+        # save level
+        fullpath = os.path.join('levels', self.chosenlevel)
+        levelfile = open(fullpath, 'w')
+        leveldatadict = {}
+        for obj in self.objlist:
+            leveldatadict[obj.name] = [obj.rect.topleft]
+        pickle.dump(leveldatadict, levelfile)
+        print 'level saved'
+        levelfile.close()
+        # save thumbnail
+        imagepath = os.path.join('images','levelmap.png')
+        minimg = pygame.transform.scale(self.bgimage,(64,64))
+        self.levelmap.blit(minimg,[int(self.chosenlevel[0]) \
+                * 64,int(self.chosenlevel[1])*64])
+        pygame.image.save(self.levelmap, imagepath)
+        self.toChooseLevel()
+
+
+    def clearLevel(self):
+        self.bgimage.fill((255,255,255))
+        self.image.fill((255,255,255))
+        self.objlist = []
+
+
+
+
 
         
     
 def main():
     clock = pygame.time.Clock()
     objdict = dbload('objdict.db')
-    imgcache = {}
+    imgcache = {'':'noimage'}
     window = pygame.display.set_mode((1224, 768))
+    imgcache = imgCacheFill(objdict, imgcache)
     gui.init(myscreen = window)
     app = gui.App(width=1224, height=768)
     spritegroup = pygame.sprite.Group()
     cursor = mouseSprite(gamefunc.imgLoad('ball1.png'))
     spritegroup.add(cursor)
     objselbox = objSelectBox(app, objdict)
-    leveleditor = levelEditingArea(app, objselbox)
+    leveleditor = levelEditingArea(app, objdict, objselbox)
     objimg = 'noimage'
     oldobjimg = 'noimage'
     running = True
@@ -156,15 +197,15 @@ def main():
             if event.type == QUIT:
                 running = False
         
-        objimg = objselbox.getValue()
+        try: 
+            objimg = objdict[objselbox.getValue()]
+        except:
+            pass
         if leveleditor.state == 'editlevel':
             if objimg == oldobjimg:
                 cursor.update()
-            elif imgcache.has_key(objimg):
-                print 'new image'
-                cursor.update(imgcache[objimg])
             else:
-                imgcache[objimg] = gamefunc.imgLoad(objimg)[0]
+                cursor.update(imgcache[objimg])
         else:
             cursor.update('noimage')
         oldobjimg = objimg
