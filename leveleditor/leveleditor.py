@@ -133,6 +133,22 @@ class levelEditingArea:
     def openLevel(self, levelname):
         self.bgimage.fill((255,255,255))
         self.image.fill((255,255,255))
+        self.objlist = []
+        levelpath = os.path.join('levels', levelname)
+        try: 
+            levelfile = open(levelpath, 'r')
+        except:
+            return
+        leveldata = pickle.load(levelfile)
+        for objname, datalist in leveldata.iteritems():
+            objimg = self.objdict[objname]
+            objimgrect = gamefunc.imgLoad(objimg)
+            for i in datalist:
+                self.objlist.append(placedObject(objname, objimgrect,\
+                        i[0], self.bgimage)) 
+        pygame.display.get_surface().blit(self.bgimage, (195,0))
+        self.image.blit(self.bgimage, (0,0))
+        pygame.display.flip()
 
     def editLevel(self):
         '''Places objects on the level'''
