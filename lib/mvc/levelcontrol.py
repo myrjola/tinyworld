@@ -41,34 +41,22 @@ class LevelController:
 
     def CreateLevel(self,level):
         # cleanup
-        mediator = self.mediator
         self.container.background.fill([255,255,255])
         self.container.badGuysSprites.empty()
         self.container.solidwalls = []
-        '''
-        if MAINCHARALIVE:
-            mainchar.rect.topleft = [33,33]            
-            goodGuysSprites.add(mainchar)
-        '''
-        walls = []
-        for i in level["mainchar"]:
-            if not self.container.maincharalive:
-                self.container.mainchar = MainChar(self.mediator, self.container, i) # init the mainchar
+        for objname, datalist in level.iteritems():
+            if objname == 'MainChar':
+                self.container.mainchar = MainChar(self.mediator,\
+                        self.container, datalist[0][0])
                 self.container.goodGuysSprites.add(self.container.mainchar)
                 self.container.maincharalive = 1
-        for i in level["badguys"]:
-            self.container.badGuysSprites.add(badGuy(mediator, self.container, i))
-        for i in level["balls"]:
-            self.container.badGuysSprites.add(bouncyBall(mediator, self.container, i))
-        for i in level["platforms"]:
-            platformrect = Rect(i, (96,32))
-            self.container.solidwalls.append(platformrect)
-            self.container.background.blit(solidPlatform(i).image,\
-                    platformrect)
-        for i in level["walls"]:
-            wallrect = Rect(i, (32,64))
-            self.container.solidwalls.append(wallrect)
-            self.container.background.blit(solidWall(i).image,wallrect)
+            elif objname.find('solid') != -1: # the object is a platform
+                for i in datalist:
+                    globals()[objname](self.container, i[0])
+            else:
+                for i in datalist:
+                    self.container.badGuysSprites.add(globals()[objname](self.mediator, \
+                            self.container, i[0])) 
         pygame.display.get_surface().blit(self.container.background,(0,0))
         pygame.display.flip()
 

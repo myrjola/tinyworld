@@ -150,7 +150,10 @@ class levelEditingArea:
         levelfile = open(fullpath, 'w')
         leveldatadict = {}
         for obj in self.objlist:
-            leveldatadict[obj.name] = [obj.rect.topleft]
+            if obj.name in leveldatadict:
+                leveldatadict[obj.name].append([obj.rect.topleft])
+            else:
+                leveldatadict[obj.name] = [[obj.rect.topleft]]
         pickle.dump(leveldatadict, levelfile)
         print 'level saved'
         levelfile.close()
