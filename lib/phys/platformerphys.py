@@ -74,5 +74,8 @@ class PlatformerPhysics:
                     newpos = self.rect.move(movepos)
 
  
+        colindex = newpos.collidelist(self.container.solidwalls)
+        if colindex != -1:
+            self.WallCollisionCheck(newpos)
         return newpos
    
