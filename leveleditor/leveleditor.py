@@ -140,10 +140,12 @@ class levelEditingArea:
         except:
             return
         leveldata = pickle.load(levelfile)
+        print "Loading: ", leveldata
         for objname, datalist in leveldata.iteritems():
             objimg = self.objdict[objname]
             objimgrect = gamefunc.imgLoad(objimg)
             for i in datalist:
+                print "rect.topleft: ", i
                 self.objlist.append(placedObject(objname, objimgrect,\
                         i[0], self.bgimage)) 
         pygame.display.get_surface().blit(self.bgimage, (195,0))
@@ -170,6 +172,7 @@ class levelEditingArea:
                 leveldatadict[obj.name].append([obj.rect.topleft])
             else:
                 leveldatadict[obj.name] = [[obj.rect.topleft]]
+        print "Saving: ", leveldatadict
         pickle.dump(leveldatadict, levelfile)
         print 'level saved'
         levelfile.close()
@@ -229,7 +232,7 @@ def main():
             cursor.update('noimage')
         oldobjimg = objimg
         app.run(events)
-        app.dirty = True
+        leveleditor.imagewidget.dirty = True
         app.draw()
         spritegroup.clear(leveleditor.image, leveleditor.bgimage)
         spritegroup.draw(leveleditor.image)
