@@ -58,7 +58,7 @@ class placedObject(pygame.sprite.Sprite):
         self.name = name
         self.image, self.rect = image, rect
         background.blit(image, pos)
-        self.rect.topleft = pos
+        self.pos = pos
 
 class objSelectBox:
     '''The SelectBox where you can choose the objects you
@@ -169,9 +169,9 @@ class levelEditingArea:
         leveldatadict = {}
         for obj in self.objlist:
             if obj.name in leveldatadict:
-                leveldatadict[obj.name].append([obj.rect.topleft])
+                leveldatadict[obj.name].append([obj.pos])
             else:
-                leveldatadict[obj.name] = [[obj.rect.topleft]]
+                leveldatadict[obj.name] = [[obj.pos]]
         print "Saving: ", leveldatadict
         pickle.dump(leveldatadict, levelfile)
         print 'level saved'
@@ -189,11 +189,6 @@ class levelEditingArea:
         self.bgimage.fill((255,255,255))
         self.image.fill((255,255,255))
         self.objlist = []
-
-
-
-
-
         
     
 def main():
