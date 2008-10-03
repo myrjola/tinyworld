@@ -58,6 +58,20 @@ class ViewController:
                 pygame.display.update(rectlist)
                 self.container.menuSprites.clear(self.container.screen, \
                         self.container.background)
+        elif event.name == 'ToPauseOrMenu':
+            # Dim the screen and save a image of the current state
+            self.container.screencopy = self.container.screen.copy()
+            self.container.screen.fill([0, 0, 0])
+            dimmedimg = self.container.screencopy.copy()
+            dimmedimg.set_alpha(100)
+            self.container.screen.blit(dimmedimg, [0,0])
+            pygame.display.flip()
+
+        elif event.name == 'ToInGame':
+            # Restore the screen
+            self.container.screen.blit(self.container.screencopy, [0,0])
+            pygame.display.flip()
+
 
 
 

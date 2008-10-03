@@ -43,5 +43,7 @@ class CPUController:
             # stop the while-loop
             self.ticking = 0
         if event.name == 'ChangeState':
+            if event.state != 'ingame':
+                self.mediator.inform('tickwaiters', ToPauseOrMenu())
             self.state = event.state
 

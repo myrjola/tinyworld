@@ -63,9 +63,10 @@ class KeyboardController:
                         elif input_event.key == K_DOWN:
                             ev = MenuNav('down')
                         elif input_event.key == K_LEFT:
-                            ev = MenuNav('enter')
-                        elif input_event.key == K_RIGHT:
                             ev = MenuNav('back')
+                        elif (input_event.key == K_RIGHT or\
+                                input_event.key == K_RETURN):
+                            ev = MenuNav('enter')
                         elif input_event.key == K_ESCAPE:
                             ev = ChangeState('ingame')
                      

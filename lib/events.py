@@ -51,4 +51,15 @@ class MenuNav:
         self.name = "MenuNav"
         self.navigation = navigation
 
+class ToPauseOrMenu:
+    '''
+    To inform the viewcontroller of gamestate change
+    '''
+    def __init__(self):
+        self.name = "ToPauseOrMenu"
+
+class ToInGame:
+    def __init__(self):
+        self.name = "ToInGame"
+
 

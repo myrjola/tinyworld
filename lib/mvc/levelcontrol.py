@@ -28,6 +28,8 @@ class LevelController:
         
     def inform(self, event):
         if event.name == 'NewGame':
+            self.container.mainchar = None
+            self.container.goodGuysSprites.empty()
             self.CreateLevel(self.OpenLevelFile('00'))
         if isinstance(event, LevelChange):
             print "self.curlevel= ", self.curlevel
@@ -59,6 +61,7 @@ class LevelController:
                             self.container, i[0])) 
         pygame.display.get_surface().blit(self.container.background,(0,0))
         pygame.display.flip()
+        self.mediator.inform('inputwaiters', ChangeState('ingame'))
 
 
     def OpenLevelFile(self,file):
