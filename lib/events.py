@@ -33,9 +33,9 @@ class MoveChar:
         self.name = "MoveChar"
         self.direction = direction 
 
-class DisplayReady:
+class NewGame:
     def __init__(self):
-        self.name = "DisplayReady"
+        self.name = "NewGame"
 
 class LevelChange:
     def __init__(self, x, y):
@@ -43,5 +43,12 @@ class LevelChange:
         self.left_or_right = x
         self.up_or_down = y
 
+class MenuNav:
+    '''
+    Navigate menu
+    '''
+    def __init__(self, navigation):
+        self.name = "MenuNav"
+        self.navigation = navigation
 
 

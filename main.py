@@ -30,6 +30,7 @@ def main():
     levelcontrol = mvc.LevelController(mediator, container)
     viewcontrol = mvc.ViewController(mediator, container)
     collisioncontrol = mvc.CollisionController(mediator, container)
+    menucontrol = mvc.MenuController(mediator, container)
     ticker.tickTock() # starts the while loop
 
 if __name__ == '__main__':

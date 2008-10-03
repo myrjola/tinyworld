@@ -25,11 +25,12 @@ class ViewController:
         self.container.screen = pygame.display.set_mode([1024,768])
         self.container.badGuysSprites = pygame.sprite.RenderUpdates()
         self.container.goodGuysSprites = pygame.sprite.RenderUpdates()
+        self.container.menuSprites = pygame.sprite.RenderUpdates()
         self.container.background = pygame.Surface([1024, 768])
         self.container.background.fill([255,255,255])
         self.container.screen.blit(self.container.background, [0,0])
         pygame.display.flip()
-        mediator.inform('levelcontrol', DisplayReady())
+        mediator.inform('levelcontrol', NewGame())
             
         
     def inform(self, event):
@@ -47,10 +48,16 @@ class ViewController:
                         self.container.background)
                 self.container.goodGuysSprites.clear(self.container.screen, \
                         self.container.background)
+
             elif event.tickname == 'MenuTick':
                 '''
                 Menu onscreen --> Draw menu
                 '''
-                print 'still to be done'    #TODO: draw menu
+                self.container.menuSprites.update()
+                rectlist = self.container.menuSprites.draw(self.container.screen)
+                pygame.display.update(rectlist)
+                self.container.menuSprites.clear(self.container.screen, \
+                        self.container.background)
+
 
 

@@ -32,10 +32,6 @@ class KeyboardController:
                 if input_event.type == QUIT:
                     ev = Quit()
 
-                elif input_event.type == KEYDOWN:
-                    if input_event.key == K_ESCAPE:
-                        ev = Quit()
-
                 if event.tickname == 'InGameTick':
                     # Movement of character possible
 
@@ -51,8 +47,8 @@ class KeyboardController:
                         elif input_event.key == K_p:
                             print "Pause"
                             ev = ChangeState('pause')
-                        pygame.event.pump()
-                        
+                        elif input_event.key == K_ESCAPE:
+                            ev = ChangeState('menu')
                     
                     elif input_event.type == KEYUP:
                         keys = pygame.key.get_pressed()
@@ -63,17 +59,22 @@ class KeyboardController:
                     # Control the menu
                     if input_event.type == KEYDOWN:
                         if input_event.key == K_UP:
-                            ev = MoveChar('jump')
+                            ev = MenuNav('up')
                         elif input_event.key == K_DOWN:
-                            ev = MoveChar('duck')
+                            ev = MenuNav('down')
                         elif input_event.key == K_LEFT:
-                            ev = MoveChar('left')
+                            ev = MenuNav('enter')
                         elif input_event.key == K_RIGHT:
-                            ev = MoveChar('right')
+                            ev = MenuNav('back')
+                        elif input_event.key == K_ESCAPE:
+                            ev = ChangeState('ingame')
                      
                 elif event.tickname == 'PauseTick':
                     if input_event.type == KEYDOWN:
                         ev = ChangeState('ingame')
+
+                pygame.event.pump()
+
                 if ev:
                     self.mediator.inform('inputwaiters', ev)
 

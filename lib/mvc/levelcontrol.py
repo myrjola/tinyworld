@@ -27,7 +27,7 @@ class LevelController:
         self.curlevel = [0,0]
         
     def inform(self, event):
-        if event.name == 'DisplayReady':
+        if event.name == 'NewGame':
             self.CreateLevel(self.OpenLevelFile('00'))
         if isinstance(event, LevelChange):
             print "self.curlevel= ", self.curlevel

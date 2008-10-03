@@ -25,7 +25,6 @@ class PlatformerPhysics:
     def __init__(self, container):
         self.container = container
         self.solidwalls = self.container.solidwalls
-        print "Physics initiated"
 
     def update(self):
         if self.newpos.move(0,1).collidelist(self.container.solidwalls) == -1: 

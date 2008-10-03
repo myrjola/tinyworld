@@ -5,4 +5,6 @@ from keyboardcontrol import *
 from levelcontrol import *
 from mediator import *
 from viewcontrol import *
+from menucontrol import *
+
 
