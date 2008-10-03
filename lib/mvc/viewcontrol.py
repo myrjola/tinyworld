@@ -20,7 +20,7 @@ from events import *
 class ViewController:
     def __init__(self, mediator, container):
         self.mediator = mediator
-        mediator.addObserver(self)
+        mediator.addObserver('tickwaiters', self)
         self.container = container
         self.container.screen = pygame.display.set_mode([1024,768])
         self.container.badGuysSprites = pygame.sprite.RenderUpdates()
@@ -29,7 +29,7 @@ class ViewController:
         self.container.background.fill([255,255,255])
         self.container.screen.blit(self.container.background, [0,0])
         pygame.display.flip()
-        mediator.inform(DisplayReady())
+        mediator.inform('levelcontrol', DisplayReady())
             
         
     def inform(self, event):

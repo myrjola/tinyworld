@@ -24,7 +24,7 @@ class CPUController:
     '''
     def __init__(self, mediator):
         self.mediator = mediator
-        self.mediator.addObserver(self)
+        self.mediator.addObserver('inputwaiters', self)
         self.clock = pygame.time.Clock()
         self.ticking = 1
         self.state = "ingame"
@@ -33,14 +33,15 @@ class CPUController:
         while self.ticking:
             self.clock.tick(35)
             if self.state == "ingame":
-                self.mediator.inform(InGameTick())
+                self.mediator.inform('tickwaiters', InGameTick())
             elif self.state == "menu":
-                self.mediator.inform(MenuTick())
+                self.mediator.inform('tickwaiters', MenuTick())
             elif self.state == "pause":
-                self.mediator.inform(PauseTick())
+                self.mediator.inform('tickwaiters', PauseTick())
     def inform(self, event):
         if event.name == 'Quit':
             # stop the while-loop
             self.ticking = 0
-
+        if event.name == 'ChangeState':
+            self.state = event.state
 

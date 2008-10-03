@@ -16,7 +16,13 @@ class MenuTick(Tick):
 
 class PauseTick(Tick):
     def __init__(self):
+        Tick.__init__(self)
         self.tickname = "PauseTick"
+
+class ChangeState:
+    def __init__(self, state):
+        self.name = "ChangeState"
+        self.state = state
 
 class Quit:
     def __init__(self):

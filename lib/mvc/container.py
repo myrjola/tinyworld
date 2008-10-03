@@ -10,7 +10,7 @@ class Container:
     '''
     def __init__(self, mediator):
         self.mediator = mediator
-        self.mediator.addObserver(self)
+        self.mediator.addObserver('container', self)
         self.solidwalls = []    # used for collision detection
         self.screen = 0
         self.background = 0     # the background-image and platforms reside here

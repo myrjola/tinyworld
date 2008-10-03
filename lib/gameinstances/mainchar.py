@@ -25,7 +25,7 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
         pygame.sprite.Sprite.__init__(self)
         phys.PlatformerPhysics.__init__(self, container)
         self.mediator = mediator
-        self.mediator.addObserver(self)
+        self.mediator.addObserver('inputwaiters', self)
         self.container = container
         if MainChar.image == None:
             MainChar.image, MainChar.rect = imgLoad('char2.png')
@@ -77,7 +77,7 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
                 levelcord[1] = -1
                 self.newpos.centery = 768
             self.rect = self.newpos # to avoid levelchange loop
-            self.mediator.inform(LevelChange(levelcord[0],levelcord[1]))
+            self.mediator.inform('levelcontrol', LevelChange(levelcord[0],levelcord[1]))
             
 
         self.rect = self.newpos #move the character

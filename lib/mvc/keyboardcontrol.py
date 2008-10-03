@@ -23,7 +23,7 @@ class KeyboardController:
     '''
     def __init__(self, mediator):
         self.mediator = mediator
-        self.mediator.addObserver(self)
+        self.mediator.addObserver('tickwaiters', self)
     def inform(self, event):
         if event.name == 'Tick':
 
@@ -48,13 +48,33 @@ class KeyboardController:
                             ev = MoveChar('left')
                         elif input_event.key == K_RIGHT:
                             ev = MoveChar('right')
+                        elif input_event.key == K_p:
+                            print "Pause"
+                            ev = ChangeState('pause')
                         pygame.event.pump()
+                        
                     
                     elif input_event.type == KEYUP:
                         keys = pygame.key.get_pressed()
                         if not 1 in [keys[K_LEFT], keys[K_RIGHT]]:
                             ev = MoveChar('stophorisontalmovement')
+
+                elif event.tickname == 'MenuTick':
+                    # Control the menu
+                    if input_event.type == KEYDOWN:
+                        if input_event.key == K_UP:
+                            ev = MoveChar('jump')
+                        elif input_event.key == K_DOWN:
+                            ev = MoveChar('duck')
+                        elif input_event.key == K_LEFT:
+                            ev = MoveChar('left')
+                        elif input_event.key == K_RIGHT:
+                            ev = MoveChar('right')
+                     
+                elif event.tickname == 'PauseTick':
+                    if input_event.type == KEYDOWN:
+                        ev = ChangeState('ingame')
                 if ev:
-                    self.mediator.inform(ev)
+                    self.mediator.inform('inputwaiters', ev)
 
 

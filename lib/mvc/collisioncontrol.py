@@ -23,7 +23,7 @@ class CollisionController:
 
     def __init__(self, mediator, container):
         self.mediator = mediator
-        self.mediator.addObserver(self)
+        self.mediator.addObserver('tickwaiters', self)
         self.container = container
 
     def inform(self, event):

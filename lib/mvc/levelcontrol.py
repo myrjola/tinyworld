@@ -22,7 +22,7 @@ class LevelController:
     '''
     def __init__(self, mediator, container):
         self.mediator = mediator
-        self.mediator.addObserver(self)
+        self.mediator.addObserver('levelcontrol', self)
         self.container = container
         self.curlevel = [0,0]
         

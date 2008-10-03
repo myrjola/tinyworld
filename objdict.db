@@ -3,9 +3,9 @@ S'badGuy'
 p1
 S'badguy1.png'
 p2
-sS'solidPlatform'
+sS'bounceBall'
 p3
-S'solid.png'
+S'ball1.png'
 p4
 sS'gravityBouncyBall'
 p5
@@ -23,8 +23,8 @@ sS'MainChar'
 p11
 S'char2.png'
 p12
-sS'bounceBall'
+sS'solidPlatform'
 p13
-S'ball1.png'
+S'solid.png'
 p14
 s.
