@@ -43,6 +43,7 @@ class LevelController:
 
     def CreateLevel(self,level):
         # cleanup
+        self.container.screen.fill([255,255,255])
         self.container.background.fill([255,255,255])
         self.container.badGuysSprites.empty()
         self.container.solidwalls = []
@@ -58,7 +59,7 @@ class LevelController:
             else:
                 for i in datalist:
                     self.container.badGuysSprites.add(globals()[objname](self.mediator, \
-                            self.container, i[0])) 
+                            self.container, i[0]))
         pygame.display.get_surface().blit(self.container.background,(0,0))
         pygame.display.flip()
         self.mediator.inform('inputwaiters', ChangeState('ingame'))

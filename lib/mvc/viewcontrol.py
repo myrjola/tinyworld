@@ -69,7 +69,8 @@ class ViewController:
 
         elif event.name == 'ToInGame':
             # Restore the screen
-            self.container.screen.blit(self.container.screencopy, [0,0])
+            if self.container.screencopy != None:
+                self.container.screen.blit(self.container.screencopy, [0,0])
             pygame.display.flip()
 
 

@@ -13,6 +13,7 @@ class Container:
         self.mediator.addObserver('container', self)
         self.solidwalls = []    # used for collision detection
         self.screen = 0
+        self.screencopy = None
         self.background = 0     # the background-image and platforms reside here
         self.badGuysSprites = 0     # the enemies
         self.goodGuysSprites = 0    # the friends
