@@ -25,7 +25,7 @@ class ViewController:
         self.container.screen = pygame.display.set_mode([1024,768])
         self.container.badGuysSprites = pygame.sprite.RenderUpdates()
         self.container.goodGuysSprites = pygame.sprite.RenderUpdates()
-        self.container.menuSprites = pygame.sprite.Group()
+        self.container.menuSprites = pygame.sprite.RenderUpdates()
         self.container.background = pygame.Surface([1024, 768])
         self.container.background.fill([255,255,255])
         self.container.screen.blit(self.container.background, [0,0])
@@ -53,26 +53,18 @@ class ViewController:
                 '''
                 Menu onscreen --> Draw menu
                 '''
-                self.container.menuSprites.update()
+                rectlist = self.container.menuSprites.draw(self.container.screen)
+                pygame.display.update(rectlist)
                 self.container.menuSprites.clear(self.container.screen, \
-                        self.container.background)
-                self.container.menuSprites.draw(self.container.screen)
-                pygame.display.update()
+                        self.container.screencopy)
+                
         elif event.name == 'ToPauseOrMenu':
-            # Dim the screen and save a image of the current state
             self.container.screencopy = self.container.screen.copy()
-            self.container.screen.fill([0, 0, 0])
-            dimmedimg = self.container.screencopy.copy()
-            dimmedimg.set_alpha(100)
-            self.container.screen.blit(dimmedimg, [0,0])
             pygame.display.flip()
 
         elif event.name == 'ToInGame':
             # Restore the screen
-            if self.container.screencopy != None:
+            if self.container.screencopy:
                 self.container.screen.blit(self.container.screencopy, [0,0])
             pygame.display.flip()
-
-
-
 

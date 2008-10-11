@@ -32,8 +32,9 @@ class MenuController:
         '''
         draws a menu on the screen
         '''
-        self.menu = []
         self.container.menuSprites.remove() # clear previous menu
+        for button in self.menu:
+            del(button)
         pos = (300,300)
         for name, callback in menu.iteritems():
             self.menu.append(menuButton(name, callback, pos))
