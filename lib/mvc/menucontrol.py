@@ -35,6 +35,7 @@ class MenuController:
         self.container.menuSprites.remove() # clear previous menu
         for button in self.menu:
             del(button)
+        self.menu = []
         pos = (300,300)
         for name, callback in menu.iteritems():
             self.menu.append(menuButton(name, callback, pos))
@@ -42,6 +43,7 @@ class MenuController:
         self.container.menuSprites.add(self.menu)
         self.activebutton = 0
         self.menu[self.activebutton].activate()
+        print self.menu
 
     def navUp(self):
         self.menu[self.activebutton].deactivate()
