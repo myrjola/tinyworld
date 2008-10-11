@@ -13,9 +13,6 @@ sys.path.insert(0, os.path.join("lib"))
 from events import *
 from gamefunc import *
 
-
-
- 
 class ProjectilePhysics:
     '''A superclass for all projectiles bouncing off walls'''
 

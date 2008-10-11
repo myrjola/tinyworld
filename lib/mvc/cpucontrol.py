@@ -46,7 +46,7 @@ class CPUController:
             if event.state != 'ingame':
                 self.mediator.inform('tickwaiters', ToPauseOrMenu())
             elif event.state == 'ingame':
-                if self.state == ("pause" or self.state == "menu"):
+                if (self.state == "pause" or self.state == "menu"):
                     self.mediator.inform('tickwaiters', ToInGame())
             self.state = event.state
 
