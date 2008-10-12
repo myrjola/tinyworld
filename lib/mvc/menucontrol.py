@@ -6,7 +6,7 @@ import os
 import sys
 
 # makes importing of modules in lib directory possible
-sys.path.insert(0, os.path.join("lib")) 
+sys.path.insert(0, os.path.join("lib"))
 
 from gameinstances import *
 from gamefunc import *
@@ -43,7 +43,6 @@ class MenuController:
         self.container.menuSprites.add(self.menu)
         self.activebutton = 0
         self.menu[self.activebutton].activate()
-        print self.menu
 
     def navUp(self):
         self.menu[self.activebutton].deactivate()
@@ -68,12 +67,18 @@ class MenuController:
 
     def navBack(self):
         self.fillMenu(self.mainmenu)
-        
 
     def inform(self, event):
         if event.name == 'ChangeState':
             if event.state == 'menu':
                 self.fillMenu(self.mainmenu)
+
+        if event.name == 'MenuClear':
+                self.container.menuSprites.remove() # clear previous menu
+                for button in self.menu:
+                    del(button)
+                self.menu = []
+
         elif event.name == 'MenuNav':
             if event.navigation == 'up':
                 self.navUp()

@@ -62,4 +62,7 @@ class ToInGame:
     def __init__(self):
         self.name = "ToInGame"
 
+class MenuClear:
+    def __init__(self):
+        self.name = "MenuClear"
 
