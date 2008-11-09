@@ -21,7 +21,7 @@ def imgLoad(imgname):
 	return img, img.get_rect()
 
 
-def imgListMake(imgname, frames)
+def imgListMake(imgname, frames):
     '''Load image sheet and split into imagelist'''
     imglist = []
     img, imgrect = imgLoad(imgname) 
@@ -37,9 +37,9 @@ def imgListMake(imgname, frames)
 def aniDictMake(sprname, aninames, anilengths):
     '''Creates the complete dictionary of a sprites animations
        aninames = list with the names of animation ie. walk, jump...'''
-       anidict = {}
-       for aniname, anilenght in aninames, anilenghts:
-           filename = sprname + '_' + aniname
-           anidict[aniname] = imgListMake(filename, anilenght) 
-       return anidict
+    anidict = {}
+    for aniname, anilenght in aninames, anilengths:
+        filename = sprname + '_' + aniname
+        anidict[aniname] = imgListMake(filename, anilenght) 
+    return anidict
     

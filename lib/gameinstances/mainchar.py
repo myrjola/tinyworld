@@ -20,6 +20,7 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
     """The main character of the game
     """
     image = None
+    anidict = None
 
     def __init__(self, mediator, container, startLocation):
         pygame.sprite.Sprite.__init__(self)
@@ -27,10 +28,13 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
         self.mediator = mediator
         self.mediator.addObserver('inputwaiters', self)
         self.container = container
+        if MainChar.anidict == None:
+            MainChar.anidict = aniDictMake('char2', ['still', 'walk'], [1, 2])
         if MainChar.image == None:
             MainChar.image, MainChar.rect = imgLoad('char2.png')
 
-        self.image = MainChar.image
+        self.imagelist = MainChar.anidict[walk]
+        self.image = self.imagelist[0]
         self.imageright = self.image
         self.imageleft = pygame.transform.flip(self.imageright, True, False)
         #screen = screen
@@ -44,6 +48,7 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
         self.jumpabletimes = 2
         self.direction = None
         self.state = "still"
+        self.frame = 0
 
         #goodGuysSprites.add(self)
 
@@ -57,6 +62,11 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
             self.MoveRight(self.speed)
             self.image = self.imageright
         else: self.StopMoving()
+        try:
+            self.image = self.imagelist[frame]
+        except IndexError:
+            self.frame = 0
+        self.frame += 1
 
         phys.PlatformerPhysics.update(self)
         #levelchange
