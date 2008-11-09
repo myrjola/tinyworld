@@ -29,11 +29,12 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
         self.mediator.addObserver('inputwaiters', self)
         self.container = container
         if MainChar.anidict == None:
-            MainChar.anidict = aniDictMake('char2', ['still', 'walk'], [1, 2])
+            MainChar.anidict = aniDictMake('char2', ['still', 'walk', 'spec'],\
+                    [1, 2, 4])
         if MainChar.image == None:
             MainChar.image, MainChar.rect = imgLoad('char2.png')
 
-        self.imagelist = MainChar.anidict[walk]
+        self.imagelist = MainChar.anidict['spec']
         self.image = self.imagelist[0]
         self.imageright = self.image
         self.imageleft = pygame.transform.flip(self.imageright, True, False)
@@ -49,6 +50,8 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
         self.direction = None
         self.state = "still"
         self.frame = 0
+        self.frametick
+        print self.anidict
 
         #goodGuysSprites.add(self)
 
@@ -62,12 +65,7 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
             self.MoveRight(self.speed)
             self.image = self.imageright
         else: self.StopMoving()
-        try:
-            self.image = self.imagelist[frame]
-        except IndexError:
-            self.frame = 0
-        self.frame += 1
-
+        
         phys.PlatformerPhysics.update(self)
         #levelchange
         if not self.rect.colliderect(self.area):
@@ -90,6 +88,15 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
             self.mediator.inform('levelcontrol', LevelChange(levelcord[0],levelcord[1]))
             
 
+        try:
+            self.image = self.imagelist[self.frame]
+        except IndexError:
+            self.frame = 0
+            self.image = self.imagelist[self.frame]
+        self.frametick += 1
+        if self.frametick == 10:
+            self.frame += 1
+            self.frametick = 0
         self.rect = self.newpos #move the character
 
     def StopMoving(self):

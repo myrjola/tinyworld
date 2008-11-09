@@ -28,9 +28,10 @@ def imgListMake(imgname, frames):
     size = ((imgrect.width / frames), (imgrect.height))
     offset = (0,0)
     tmpimg = pygame.Surface(size)
-    for i in range(0, frames - 1):
+    for i in range(frames):
         tmpimg.blit(img, (0,0), (offset, size))
-        imglist.append(tmpimg)
+        imglist.append(tmpimg.copy())
+        print 'added image: ', imgname, " frame: ", i + 1
         offset = ((offset[0] + size[0]), offset[1])
     return imglist
 
@@ -38,8 +39,13 @@ def aniDictMake(sprname, aninames, anilengths):
     '''Creates the complete dictionary of a sprites animations
        aninames = list with the names of animation ie. walk, jump...'''
     anidict = {}
-    for aniname, anilenght in aninames, anilengths:
-        filename = sprname + '_' + aniname
-        anidict[aniname] = imgListMake(filename, anilenght) 
+    i = 0
+    for aniname in aninames:
+        anilength = anilengths[i]
+        i += 1
+        filename = sprname + '_' + aniname + '.png'
+        anidict[aniname] = imgListMake(filename, anilength) 
+        print "added entry ", aniname, ' with length ', anilength, \
+                ' to anidict'
     return anidict
     
