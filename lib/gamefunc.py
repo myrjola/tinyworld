@@ -33,8 +33,7 @@ def imgListMake(imgname, frames, flip = False):
         if flip:
             tmpimg = pygame.transform.flip(tmpimg, True, False)
         imglist.append(tmpimg.copy())
-        print 'added image: ', imgname, " frame: ", i + 1
-        offset = ((offset[0] + size[0]), offset[1])
+        offset = ((offset[0] + size[0] + 1), offset[1]) # skips the separator
     return imglist
 
 def aniDictMake(sprname, aninames, anilengths):
@@ -48,8 +47,5 @@ def aniDictMake(sprname, aninames, anilengths):
         filename = sprname + '_' + aniname + '.png'
         anidict[aniname + '_right'] = imgListMake(filename, anilength)
         anidict[aniname + '_left'] = imgListMake(filename, anilength, flip = True)
-        print "added entry ", aniname, ' with length ', anilength, \
-                ' to anidict'
-    
     return anidict
     
