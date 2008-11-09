@@ -115,9 +115,12 @@ class levelEditingArea:
             self.selbox.b3.disabled = False
             self.objlist = []
             mousepos = pygame.mouse.get_pos()
-            self.chosenlevel = str( (mousepos[0] - 195) / 64) + str(mousepos[1] / 64)
-            print self.chosenlevel
-            self.openLevel(self.chosenlevel)
+            self.chosenlevel = (((mousepos[0] - 195) / 64),\
+                    (mousepos[1] / 64))
+            self.chosenlevelstr = str(self.chosenlevel[0]) + '-' + \
+                    str(self.chosenlevel[1])
+            print "Level: ", self.chosenlevelstr
+            self.openLevel(self.chosenlevelstr)
         else:
             self.editLevel()
 
@@ -164,7 +167,7 @@ class levelEditingArea:
 
     def saveLevel(self):
         # save level
-        fullpath = os.path.join('levels', self.chosenlevel)
+        fullpath = os.path.join('levels', self.chosenlevelstr)
         levelfile = open(fullpath, 'w')
         leveldatadict = {}
         for obj in self.objlist:

@@ -30,14 +30,14 @@ class LevelController:
         if event.name == 'NewGame':
             self.container.mainchar = None
             self.container.goodGuysSprites.empty()
-            self.CreateLevel(self.OpenLevelFile('00'))
+            self.CreateLevel(self.OpenLevelFile('0-0'))
         if isinstance(event, LevelChange):
             print "self.curlevel= ", self.curlevel
             self.curlevel[0] += event.left_or_right
             self.curlevel[1] += event.up_or_down
             print "self.curlevel= ", self.curlevel
             self.CreateLevel(self.OpenLevelFile(str(self.curlevel[0]) +\
-                    str(self.curlevel[1])))
+                    '-' + str(self.curlevel[1])))
 
 
 
