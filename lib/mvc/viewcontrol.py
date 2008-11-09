@@ -25,7 +25,7 @@ class ViewController:
         self.container.screen = pygame.display.set_mode([1024,768])
         self.container.badGuysSprites = pygame.sprite.RenderUpdates()
         self.container.goodGuysSprites = pygame.sprite.RenderUpdates()
-        self.container.menuSprites = pygame.sprite.OrderedUpdates()
+        self.container.menuSprites = pygame.sprite.LayeredDirty()
         self.container.background = pygame.Surface([1024, 768])
         self.container.background.fill([255,255,255])
         self.container.screen.blit(self.container.background, [0,0])
