@@ -107,7 +107,7 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
     def Collide(self, collideobject):
         if collideobject.deadly == True:
             self.rect.topleft = self.startLocation
-            self.mediator.inform('inputwaiters', ChangeState('pause'))
+            pygame.time.delay(300)
         else:
             collideobject.kill()
 
