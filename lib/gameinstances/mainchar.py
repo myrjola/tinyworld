@@ -15,11 +15,9 @@ from events import *
 from gamefunc import *
 
 
-
 class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
     """The main character of the game
     """
-    image = None
     anidict = None
 
     def __init__(self, mediator, container, startLocation):
@@ -31,14 +29,10 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
         if MainChar.anidict == None:
             MainChar.anidict = aniDictMake('char2', ['still', 'walk'],\
                     [1, 2])
-        if MainChar.image == None:
-            MainChar.image, MainChar.rect = imgLoad('char2.png')
-
-        self.imagelist = MainChar.anidict['still']
+        self.imagelist = MainChar.anidict['walk_right']
         self.image = self.imagelist[0]
         self.imageright = self.image
         self.imageleft = pygame.transform.flip(self.imageright, True, False)
-        #screen = screen
         self.rect = self.image.get_rect()
         self.startLocation = startLocation
         self.rect.topleft = startLocation
@@ -47,24 +41,14 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
         self.movepos = [0,0]
         self.jumpable = 1
         self.jumpabletimes = 2
-        self.direction = None
+        self.direction = 'right'
         self.state = "still"
         self.frame = 0
         self.frametick = 0
-        print self.anidict
-
-        #goodGuysSprites.add(self)
 
     def update(self):
 
         self.newpos = self.rect.move(self.movepos)
-        if self.direction == "left":
-            self.MoveLeft(-self.speed)
-            self.image = self.imageleft
-        elif self.direction == "right":
-            self.MoveRight(self.speed)
-            self.image = self.imageright
-        else: self.StopMoving()
         
         phys.PlatformerPhysics.update(self)
         #levelchange
@@ -85,9 +69,10 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
                 levelcord[1] = -1
                 self.newpos.centery = 768
             self.rect = self.newpos # to avoid levelchange loop
-            self.mediator.inform('levelcontrol', LevelChange(levelcord[0],levelcord[1]))
-            
-
+            self.mediator.inform('levelcontrol', LevelChange(levelcord[0],\
+                levelcord[1]))
+        # animate the character
+        self.imagelist = self.anidict[self.state + '_' + self.direction]
         try:
             self.image = self.imagelist[self.frame]
         except IndexError:
@@ -97,7 +82,8 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
         if self.frametick == 5:
             self.frame += 1
             self.frametick = 0
-        self.rect = self.newpos #move the character
+        #move the character
+        self.rect = self.newpos
 
     def StopMoving(self):
         self.movepos[0] = 0 
@@ -129,20 +115,19 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
     def inform(self, event):
         if event.name == 'MoveChar':
             self.move = event.direction
-            self.state = "moving"
+            self.state = "walk"
             if self.move == "left":
-                self.direction = "left"
+                self.direction = 'left'
                 self.movepos[0] = -self.speed
                 
             elif self.move == "right":
-                self.direction = "right"
+                self.direction = 'right'
                 self.movepos[0] = self.speed
  
             elif self.move == "jump":
                 self.Jump()
                    
             elif self.move == "stophorisontalmovement":
-                self.direction = None
                 self.state = "still"
                 self.movepos[0] = 0
     

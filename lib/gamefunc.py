@@ -6,22 +6,22 @@
 import pygame, os
 
 def imgLoad(imgname):
-	'''Load image and return image object'''
-	whole_path = os.path.join('images',imgname)
-	try: 
-		img = pygame.image.load(whole_path)
-		if img.get_alpha():
-			img = img.convert_alpha()
-		else:
-			img = img.convert()
-	
-	except pygame.error, message:
-		print 'Image not found: ', whole_path
-		raise SystemExit, message
-	return img, img.get_rect()
+    '''Load image and return image object'''
+    whole_path = os.path.join('images',imgname)
+    try: 
+        img = pygame.image.load(whole_path)
+        if img.get_alpha():
+            img = img.convert_alpha()
+        else:
+            img = img.convert()
+    
+    except pygame.error, message:
+        print 'Image not found: ', whole_path
+        raise SystemExit, message
+    return img, img.get_rect()
 
 
-def imgListMake(imgname, frames):
+def imgListMake(imgname, frames, flip = False):
     '''Load image sheet and split into imagelist'''
     imglist = []
     img, imgrect = imgLoad(imgname) 
@@ -30,6 +30,8 @@ def imgListMake(imgname, frames):
     tmpimg = pygame.Surface(size)
     for i in range(frames):
         tmpimg.blit(img, (0,0), (offset, size))
+        if flip:
+            tmpimg = pygame.transform.flip(tmpimg, True, False)
         imglist.append(tmpimg.copy())
         print 'added image: ', imgname, " frame: ", i + 1
         offset = ((offset[0] + size[0]), offset[1])
@@ -44,8 +46,10 @@ def aniDictMake(sprname, aninames, anilengths):
         anilength = anilengths[i]
         i += 1
         filename = sprname + '_' + aniname + '.png'
-        anidict[aniname] = imgListMake(filename, anilength) 
+        anidict[aniname + '_right'] = imgListMake(filename, anilength)
+        anidict[aniname + '_left'] = imgListMake(filename, anilength, flip = True)
         print "added entry ", aniname, ' with length ', anilength, \
                 ' to anidict'
+    
     return anidict
     
