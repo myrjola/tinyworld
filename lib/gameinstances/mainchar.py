@@ -31,8 +31,6 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
                     [1, 2])
         self.imagelist = MainChar.anidict['walk_right']
         self.image = self.imagelist[0]
-        self.imageright = self.image
-        self.imageleft = pygame.transform.flip(self.imageright, True, False)
         self.rect = self.image.get_rect()
         self.startLocation = startLocation
         self.rect.topleft = startLocation
@@ -68,6 +66,7 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
             elif self.rect.bottom <= self.area.top:
                 levelcord[1] = -1
                 self.newpos.centery = 768
+            self.startLocation = self.newpos.topleft
             self.rect = self.newpos # to avoid levelchange loop
             self.mediator.inform('levelcontrol', LevelChange(levelcord[0],\
                 levelcord[1]))
@@ -108,6 +107,7 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
     def Collide(self, collideobject):
         if collideobject.deadly == True:
             self.rect.topleft = self.startLocation
+            self.mediator.inform('inputwaiters', ChangeState('pause'))
         else:
             collideobject.kill()
 
