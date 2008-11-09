@@ -29,12 +29,12 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
         self.mediator.addObserver('inputwaiters', self)
         self.container = container
         if MainChar.anidict == None:
-            MainChar.anidict = aniDictMake('char2', ['still', 'walk', 'spec'],\
-                    [1, 2, 4])
+            MainChar.anidict = aniDictMake('char2', ['still', 'walk'],\
+                    [1, 2])
         if MainChar.image == None:
             MainChar.image, MainChar.rect = imgLoad('char2.png')
 
-        self.imagelist = MainChar.anidict['spec']
+        self.imagelist = MainChar.anidict['still']
         self.image = self.imagelist[0]
         self.imageright = self.image
         self.imageleft = pygame.transform.flip(self.imageright, True, False)
@@ -50,7 +50,7 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
         self.direction = None
         self.state = "still"
         self.frame = 0
-        self.frametick
+        self.frametick = 0
         print self.anidict
 
         #goodGuysSprites.add(self)
@@ -94,7 +94,7 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
             self.frame = 0
             self.image = self.imagelist[self.frame]
         self.frametick += 1
-        if self.frametick == 10:
+        if self.frametick == 5:
             self.frame += 1
             self.frametick = 0
         self.rect = self.newpos #move the character
