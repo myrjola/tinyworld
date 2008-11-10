@@ -27,9 +27,9 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
         self.mediator.addObserver('inputwaiters', self)
         self.container = container
         if MainChar.anidict == None:
-            MainChar.anidict = aniDictMake('char2', ['still', 'walk'],\
-                    [1, 2])
-        self.imagelist = MainChar.anidict['walk_right']
+            MainChar.anidict = aniDictMake('mainchar', ['still', 'walk'],\
+                    [4, 4])
+        self.imagelist = MainChar.anidict['still_right']
         self.image = self.imagelist[0]
         self.rect = self.image.get_rect()
         self.startLocation = startLocation
@@ -79,7 +79,7 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
             self.image = self.imagelist[self.frame]
         self.frametick += 1
         if self.frametick == 5:
-            self.frame += 1
+            #self.frame += 1
             self.frametick = 0
         #move the character
         self.rect = self.newpos
