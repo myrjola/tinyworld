@@ -2,7 +2,8 @@
 # File: leveleditor.py
 # Author: Martin Yrjola
 # Desc: A level editor for the platformer, now using objdict.db
-#       to make a list of available objects.
+#       to make a list of available objects. Now trying to implement
+#       the gui myself.
 #
 
 import os
