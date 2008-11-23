@@ -1,1 +1,1 @@
-martin.yrjola = Martin Yrjölä <martin.yrjola@gmail.com>
+yrjoelae = Martin Yrjölä <martin.yrjola@gmail.com>
