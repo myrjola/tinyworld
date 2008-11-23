@@ -79,7 +79,7 @@ class MainChar(pygame.sprite.Sprite, phys.PlatformerPhysics):
             self.image = self.imagelist[self.frame]
         self.frametick += 1
         if self.frametick == 5:
-            #self.frame += 1
+            self.frame += 1
             self.frametick = 0
         #move the character
         self.rect = self.newpos
